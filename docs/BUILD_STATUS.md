@@ -1,6 +1,6 @@
 # Replio Build Status
 
-**Overall:** M0 CODE/CI COMPLETE — EXTERNAL PREFLIGHT BLOCKED; M1 FOUNDATION IN PROGRESS
+**Overall:** M0 COMPLETE; M1 FOUNDATION DEPLOYED, AUTH CONFIGURATION PENDING
 
 ## Current milestone
 
@@ -17,8 +17,8 @@ M1 — Data foundation, Auth and design shell
 - [x] Runtime environment validation and complete secret-name inventory established; values remain uncommitted.
 - [x] GitHub Actions application and Supabase/RLS jobs established.
 - [x] Connected services inspected without reusing City Seekers infrastructure.
-- [ ] Dedicated Replio Supabase project connected (account-owner action).
-- [ ] Replio Vercel project/Git Preview connected (account-owner action).
+- [x] Dedicated Replio Supabase project connected; City Seekers infrastructure was not reused.
+- [x] Replio Vercel project connected to `AgentKit91/replio` through Git integration.
 
 ### M1 — Data foundation, Auth and design shell
 
@@ -32,6 +32,8 @@ M1 — Data foundation, Auth and design shell
 - [x] Minimal onboarding captures only name, market, currency, niche, main platforms and explicit labelled-thread consent.
 - [x] Empty states explain what appears next and provide a useful action.
 - [x] Migration and pgTAP RLS suite pass in GitHub Actions local Supabase.
+- [x] M1 migrations applied to the dedicated hosted Replio Supabase project.
+- [x] Hosted Supabase security advisors pass with no findings; missing foreign-key indexes remediated.
 - [ ] Google provider configured and sign-in/onboarding exercised end-to-end.
 
 ## Tests last run
@@ -47,22 +49,23 @@ M1 — Data foundation, Auth and design shell
 
 ## Migrations/deployments
 
-- Added `20260827212007_identity_foundation.sql` (not yet applied to a remote project).
-- No deployment made: no Replio Vercel project exists in the connected account.
+- Applied `identity_foundation` to Supabase project `Replio` in `eu-west-1`.
+- Applied `add_foundation_foreign_key_indexes` after hosted performance-advisor review.
+- Vercel `replio` project is linked to GitHub; its current production deployment is the pre-implementation `main` revision. Branch preview is pending the next push.
 
 ## Known blockers
 
-1. The connected Supabase account has no dedicated Replio project. Existing City Seekers projects were deliberately not reused.
-2. The connected Vercel team has no Replio project linked to `AgentKit91/replio`.
+1. Vercel Preview/Production still need `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_APP_URL` and `APP_ENV`. The connected Vercel API is read-only for environment variables and the available browser is not signed into Vercel.
+2. Supabase Google Auth still needs founder-owned Google OAuth client credentials and provider activation before end-to-end sign-in can pass.
 3. Docker is unavailable on this host; the same local Supabase/pgTAP flow is green in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
 
 ## Next three tasks
 
-1. Connect/create the dedicated Replio Supabase project, apply migration, run advisors and execute the RLS matrix.
-2. Connect `AgentKit91/replio` to a Replio Vercel project and configure Preview environment variables.
-3. Configure Supabase Google Auth and verify sign-in → atomic workspace → onboarding → dashboard end-to-end.
+1. Configure Vercel Preview/Production public Supabase environment values and the environment-specific app URL.
+2. Configure Supabase Google Auth and allowed redirect URLs.
+3. Verify sign-in → atomic workspace → onboarding → authenticated dashboard end-to-end.
 
 ## Decision log
 

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { AppShell } from "@/components/replio/AppShell";
+import { requireUser } from "@/features/auth/require-user";
 
 const sections: Record<string, { title: string; description: string; action: string }> = {
   deals: { title: "Deals", description: "Your labelled brand conversations will become living deals here.", action: "Connect Gmail in Settings to import your first chosen thread." },
@@ -10,6 +11,7 @@ const sections: Record<string, { title: string; description: string; action: str
 };
 
 export default async function SectionPage({ params }: { params: Promise<{ section: string }> }) {
+  await requireUser();
   const { section } = await params;
   const content = sections[section];
   if (!content) notFound();

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { completeOnboarding } from "./actions";
+import { requireUser } from "@/features/auth/require-user";
 
 export default async function Onboarding({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+  await requireUser();
   const { error } = await searchParams;
   return <main className="auth-page"><section className="auth-panel onboarding-panel">
     <Link className="wordmark" href="/">Replio</Link><p className="eyebrow form-eyebrow">Your commercial baseline</p>
