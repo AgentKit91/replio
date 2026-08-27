@@ -34,6 +34,7 @@ M1 — Data foundation, Auth and design shell
 - [x] Migration and pgTAP RLS suite pass in GitHub Actions local Supabase.
 - [x] M1 migrations applied to the dedicated hosted Replio Supabase project.
 - [x] Hosted Supabase security advisors pass with no findings; missing foreign-key indexes remediated.
+- [x] Vercel Production and Preview configured with the Supabase URL/publishable key and environment-specific app URL.
 - [ ] Google provider configured and sign-in/onboarding exercised end-to-end.
 
 ## Tests last run
@@ -51,21 +52,21 @@ M1 — Data foundation, Auth and design shell
 
 - Applied `identity_foundation` to Supabase project `Replio` in `eu-west-1`.
 - Applied `add_foundation_foreign_key_indexes` after hosted performance-advisor review.
-- Vercel `replio` project is linked to GitHub; its current production deployment is the pre-implementation `main` revision. Branch preview is pending the next push.
+- Vercel `replio` project is linked to GitHub; the PR branch preview is READY. A configuration-aware rebuild is triggered by the status commit that records the environment setup.
 
 ## Known blockers
 
-1. Vercel Preview/Production still need `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_APP_URL` and `APP_ENV`. The connected Vercel API is read-only for environment variables and the available browser is not signed into Vercel.
-2. Supabase Google Auth still needs founder-owned Google OAuth client credentials and provider activation before end-to-end sign-in can pass.
+1. Supabase Google Auth still needs founder-owned Google OAuth client credentials and provider activation before end-to-end sign-in can pass.
+2. Supabase Auth Site URL/redirect allowlist must include the Replio Production and Preview callback origins.
 3. Docker is unavailable on this host; the same local Supabase/pgTAP flow is green in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
 
 ## Next three tasks
 
-1. Configure Vercel Preview/Production public Supabase environment values and the environment-specific app URL.
-2. Configure Supabase Google Auth and allowed redirect URLs.
-3. Verify sign-in → atomic workspace → onboarding → authenticated dashboard end-to-end.
+1. Configure Supabase Google Auth and allowed redirect URLs.
+2. Verify sign-in → atomic workspace → onboarding → authenticated dashboard end-to-end.
+3. Complete M1 acceptance review and begin M2 Gmail connection foundations.
 
 ## Decision log
 
