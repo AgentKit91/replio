@@ -1,6 +1,6 @@
 # Replio Build Status
 
-**Overall:** M0 COMPLETE; M1 FOUNDATION DEPLOYED, GOOGLE AUTH CREDENTIALS PENDING
+**Overall:** M0 COMPLETE; M1 FOUNDATION DEPLOYED, END-TO-END AUTH VERIFICATION PENDING
 
 ## Current milestone
 
@@ -36,7 +36,9 @@ M1 — Data foundation, Auth and design shell
 - [x] Hosted Supabase security advisors pass with no findings; missing foreign-key indexes remediated.
 - [x] Vercel Production and Preview configured with the Supabase URL/publishable key and environment-specific app URL.
 - [x] Supabase Auth Site URL and exact localhost, Production and PR Preview callback URLs configured.
-- [ ] Google provider configured and sign-in/onboarding exercised end-to-end.
+- [x] Dedicated Google Cloud project and web OAuth client configured with the Supabase callback; founder added as a test user.
+- [x] Supabase Google provider enabled with credentials retained only in Google Cloud and Supabase.
+- [ ] Google sign-in/onboarding exercised end-to-end on a directly testable deployment.
 
 ## Tests last run
 
@@ -57,15 +59,15 @@ M1 — Data foundation, Auth and design shell
 
 ## Known blockers
 
-1. Supabase Google Auth still needs founder-owned Google OAuth client credentials and provider activation before end-to-end sign-in can pass.
-2. Google Cloud first-use Terms of Service require founder acceptance before the OAuth client can be created.
+1. End-to-end Google sign-in awaits a directly testable deployment: the PR Preview is protected by Vercel Authentication and the Production deployment still tracks the pre-application `main` revision.
+2. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
 3. Docker is unavailable on this host; the same local Supabase/pgTAP flow is green in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
 
 ## Next three tasks
 
-1. Create the Google OAuth client and configure Supabase Google Auth.
+1. Make the application revision directly testable by merging/promoting it or adjusting Preview Deployment Protection.
 2. Verify sign-in → atomic workspace → onboarding → authenticated dashboard end-to-end.
 3. Complete M1 acceptance review and begin M2 Gmail connection foundations.
 
