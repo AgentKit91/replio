@@ -1,6 +1,6 @@
 # Replio Build Status
 
-**Overall:** M0 COMPLETE; M1 FOUNDATION DEPLOYED, AUTH CONFIGURATION PENDING
+**Overall:** M0 COMPLETE; M1 FOUNDATION DEPLOYED, GOOGLE AUTH CREDENTIALS PENDING
 
 ## Current milestone
 
@@ -35,6 +35,7 @@ M1 — Data foundation, Auth and design shell
 - [x] M1 migrations applied to the dedicated hosted Replio Supabase project.
 - [x] Hosted Supabase security advisors pass with no findings; missing foreign-key indexes remediated.
 - [x] Vercel Production and Preview configured with the Supabase URL/publishable key and environment-specific app URL.
+- [x] Supabase Auth Site URL and exact localhost, Production and PR Preview callback URLs configured.
 - [ ] Google provider configured and sign-in/onboarding exercised end-to-end.
 
 ## Tests last run
@@ -57,14 +58,14 @@ M1 — Data foundation, Auth and design shell
 ## Known blockers
 
 1. Supabase Google Auth still needs founder-owned Google OAuth client credentials and provider activation before end-to-end sign-in can pass.
-2. Supabase Auth Site URL/redirect allowlist must include the Replio Production and Preview callback origins.
+2. Google Cloud first-use Terms of Service require founder acceptance before the OAuth client can be created.
 3. Docker is unavailable on this host; the same local Supabase/pgTAP flow is green in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
 
 ## Next three tasks
 
-1. Configure Supabase Google Auth and allowed redirect URLs.
+1. Create the Google OAuth client and configure Supabase Google Auth.
 2. Verify sign-in → atomic workspace → onboarding → authenticated dashboard end-to-end.
 3. Complete M1 acceptance review and begin M2 Gmail connection foundations.
 
