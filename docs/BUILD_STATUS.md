@@ -1,6 +1,6 @@
 # Replio Build Status
 
-**Overall:** M0 LOCAL COMPLETE — EXTERNAL PREFLIGHT BLOCKED; M1 FOUNDATION IN PROGRESS
+**Overall:** M0 CODE/CI COMPLETE — EXTERNAL PREFLIGHT BLOCKED; M1 FOUNDATION IN PROGRESS
 
 ## Current milestone
 
@@ -31,7 +31,7 @@ M1 — Data foundation, Auth and design shell
 - [x] Responsive creator shell/navigation and calm configurable design tokens implemented.
 - [x] Minimal onboarding captures only name, market, currency, niche, main platforms and explicit labelled-thread consent.
 - [x] Empty states explain what appears next and provide a useful action.
-- [ ] Migration/RLS suite executed against a real local or dedicated Replio Supabase database.
+- [x] Migration and pgTAP RLS suite pass in GitHub Actions local Supabase.
 - [ ] Google provider configured and sign-in/onboarding exercised end-to-end.
 
 ## Tests last run
@@ -42,7 +42,8 @@ M1 — Data foundation, Auth and design shell
 - `pnpm typecheck` — pass.
 - `pnpm test` — pass (2 tests).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
-- `supabase test db` — not run locally because Docker is unavailable; CI job is configured, pending push/runner execution.
+- GitHub Actions `app` job — pass.
+- GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, 8 pgTAP assertions).
 
 ## Migrations/deployments
 
@@ -53,7 +54,7 @@ M1 — Data foundation, Auth and design shell
 
 1. The connected Supabase account has no dedicated Replio project. Existing City Seekers projects were deliberately not reused.
 2. The connected Vercel team has no Replio project linked to `AgentKit91/replio`.
-3. Docker is unavailable on this host, so local pgTAP execution is deferred to CI or the dedicated Supabase project.
+3. Docker is unavailable on this host; the same local Supabase/pgTAP flow is green in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
 
