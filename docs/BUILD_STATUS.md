@@ -1,10 +1,10 @@
 # Replio Build Status
 
-**Overall:** M0 COMPLETE; M1 FOUNDATION DEPLOYED, END-TO-END AUTH VERIFICATION PENDING
+**Overall:** M0 AND M1 COMPLETE; M2 IN PROGRESS
 
 ## Current milestone
 
-M1 — Data foundation, Auth and design shell
+M2 — Gmail connection + labelled-thread ingestion
 
 ## Completed
 
@@ -38,38 +38,54 @@ M1 — Data foundation, Auth and design shell
 - [x] Supabase Auth Site URL and exact localhost, Production and PR Preview callback URLs configured.
 - [x] Dedicated Google Cloud project and web OAuth client configured with the Supabase callback; founder added as a test user.
 - [x] Supabase Google provider enabled with credentials retained only in Google Cloud and Supabase.
-- [ ] Google sign-in/onboarding exercised end-to-end on a directly testable deployment.
+- [x] Google sign-in/onboarding exercised end-to-end on Production.
+- [x] Production Auth created exactly one user, hidden workspace, membership, complete required profile and platform record.
+
+### M2 — Gmail connection + labelled-thread ingestion
+
+- [x] Current Google Gmail scope, watch and authenticated Pub/Sub mechanics re-verified against official docs.
+- [x] Gmail/deal/message foundation migration authored with tenant RLS and browser read-only grants.
+- [x] Refresh-token ciphertext and sync-event internals isolated in the private schema.
+- [x] Durable logged `gmail_sync` queue and idempotent event-enqueue boundary authored.
+- [x] Separate Gmail OAuth with state, PKCE, offline consent and AES-256-GCM refresh-token encryption implemented.
+- [x] Deterministic Replio label find/create and label-filtered Gmail watch setup implemented.
+- [x] Authenticated Pub/Sub webhook verification and MIME normalization/security helpers implemented.
+- [x] Incremental Gmail history worker persists only explicitly labelled new threads or later changes to known threads.
+- [x] Repeated Pub/Sub history windows and repeated thread/message persistence are idempotent at the database boundary.
 
 ## Tests last run
 
-27 Aug 2026:
+28 Aug 2026:
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
-- `pnpm test` — pass (2 tests).
+- `pnpm test` — pass (7 tests).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
 - GitHub Actions `app` job — pass.
 - GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, 8 pgTAP assertions).
+- Hosted pgTAP Gmail idempotency transaction — pass (6 assertions; rolled back).
 
 ## Migrations/deployments
 
 - Applied `identity_foundation` to Supabase project `Replio` in `eu-west-1`.
 - Applied `add_foundation_foreign_key_indexes` after hosted performance-advisor review.
+- Applied `gmail_ingestion_foundation` and `gmail_sync_worker_boundary` to the dedicated hosted Supabase project.
+- Hosted security advisor reports no M2 schema/RLS findings; the remaining leaked-password warning does not apply to Google-only authentication.
 - Vercel `replio` project is linked to GitHub; the PR branch preview is READY. A configuration-aware rebuild is triggered by the status commit that records the environment setup.
 
 ## Known blockers
 
-1. End-to-end Google sign-in awaits a directly testable deployment: the PR Preview is protected by Vercel Authentication and the Production deployment still tracks the pre-application `main` revision.
-2. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
-3. Docker is unavailable on this host; the same local Supabase/pgTAP flow is green in GitHub Actions.
+1. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
+2. Gmail end-to-end activation will require enabling Gmail/Pub/Sub APIs, adding the Gmail callback, and creating the topic/authenticated subscription after the M2 preview endpoint is available.
+3. Docker is unavailable on this host; database/pgTAP verification runs in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
 
 ## Next three tasks
 
-1. Make the application revision directly testable by merging/promoting it or adjusting Preview Deployment Protection.
-2. Verify sign-in → atomic workspace → onboarding → authenticated dashboard end-to-end.
-3. Complete M1 acceptance review and begin M2 Gmail connection foundations.
+1. Validate and apply the M2 migration, including RLS and advisor review.
+2. Implement the durable history-sync worker and idempotent labelled-thread ingestion.
+3. Deploy an M2 Preview, then configure Google Cloud Gmail/Pub/Sub resources for end-to-end testing.
 
 ## Decision log
 
