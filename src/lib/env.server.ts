@@ -4,9 +4,39 @@ import { z } from "zod";
 const serverSchema = z.object({
   APP_ENV: z.enum(["development", "test", "preview", "production"]).default("development"),
   SUPABASE_SECRET_KEY: z.string().min(1).optional(),
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+  GOOGLE_OAUTH_REDIRECT_URI: z.url().optional(),
+  GOOGLE_PUBSUB_TOPIC: z.string().startsWith("projects/").optional(),
+  GOOGLE_PUBSUB_AUDIENCE: z.url().optional(),
+  GOOGLE_PUBSUB_PUSH_SERVICE_ACCOUNT_EMAIL: z.email().optional(),
+  GMAIL_TOKEN_ENCRYPTION_KEY: z.string().min(1).optional(),
+  GMAIL_TOKEN_ENCRYPTION_KEY_VERSION: z.string().min(1).default("v1"),
+  INTERNAL_JOB_SECRET: z.string().min(24).optional(),
 });
 
 export const serverEnv = serverSchema.parse({
   APP_ENV: process.env.APP_ENV,
   SUPABASE_SECRET_KEY: process.env.SUPABASE_SECRET_KEY || undefined,
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || undefined,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || undefined,
+  GOOGLE_OAUTH_REDIRECT_URI: process.env.GOOGLE_OAUTH_REDIRECT_URI || undefined,
+  GOOGLE_PUBSUB_TOPIC: process.env.GOOGLE_PUBSUB_TOPIC || undefined,
+  GOOGLE_PUBSUB_AUDIENCE: process.env.GOOGLE_PUBSUB_AUDIENCE || undefined,
+  GOOGLE_PUBSUB_PUSH_SERVICE_ACCOUNT_EMAIL: process.env.GOOGLE_PUBSUB_PUSH_SERVICE_ACCOUNT_EMAIL || undefined,
+  GMAIL_TOKEN_ENCRYPTION_KEY: process.env.GMAIL_TOKEN_ENCRYPTION_KEY || undefined,
+  GMAIL_TOKEN_ENCRYPTION_KEY_VERSION: process.env.GMAIL_TOKEN_ENCRYPTION_KEY_VERSION,
+  INTERNAL_JOB_SECRET: process.env.INTERNAL_JOB_SECRET || undefined,
 });
+
+export function requireGmailServerEnv() {
+  const required = serverSchema.required({
+    SUPABASE_SECRET_KEY: true,
+    GOOGLE_CLIENT_ID: true,
+    GOOGLE_CLIENT_SECRET: true,
+    GOOGLE_OAUTH_REDIRECT_URI: true,
+    GOOGLE_PUBSUB_TOPIC: true,
+    GMAIL_TOKEN_ENCRYPTION_KEY: true,
+  });
+  return required.parse(serverEnv);
+}
