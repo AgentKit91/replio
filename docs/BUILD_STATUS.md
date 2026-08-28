@@ -52,6 +52,9 @@ M2 — Gmail connection + labelled-thread ingestion
 - [x] Authenticated Pub/Sub webhook verification and MIME normalization/security helpers implemented.
 - [x] Incremental Gmail history worker persists only explicitly labelled new threads or later changes to known threads.
 - [x] Repeated Pub/Sub history windows and repeated thread/message persistence are idempotent at the database boundary.
+- [x] Gmail API and Pub/Sub API enabled in the dedicated Replio Google Cloud project.
+- [x] Production Gmail OAuth callback added; a dedicated rotated client secret is stored only in Google Cloud and Vercel.
+- [x] Vercel Preview/Production server configuration includes Supabase backend access, Gmail token encryption and internal-worker secrets.
 
 ## Tests last run
 
@@ -71,12 +74,13 @@ M2 — Gmail connection + labelled-thread ingestion
 - Applied `add_foundation_foreign_key_indexes` after hosted performance-advisor review.
 - Applied `gmail_ingestion_foundation` and `gmail_sync_worker_boundary` to the dedicated hosted Supabase project.
 - Hosted security advisor reports no M2 schema/RLS findings; the remaining leaked-password warning does not apply to Google-only authentication.
+- PR #2 Preview deployment and both GitHub Actions jobs are green.
 - Vercel `replio` project is linked to GitHub; the PR branch preview is READY. A configuration-aware rebuild is triggered by the status commit that records the environment setup.
 
 ## Known blockers
 
 1. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
-2. Gmail end-to-end activation will require enabling Gmail/Pub/Sub APIs, adding the Gmail callback, and creating the topic/authenticated subscription after the M2 preview endpoint is available.
+2. The Google Cloud project has no billing account. Pub/Sub topic creation is rejected until the founder links billing; this blocks the Gmail watch/topic/subscription end-to-end activation but not further local feature work.
 3. Docker is unavailable on this host; database/pgTAP verification runs in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
@@ -85,7 +89,7 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 1. Validate and apply the M2 migration, including RLS and advisor review.
 2. Implement the durable history-sync worker and idempotent labelled-thread ingestion.
-3. Deploy an M2 Preview, then configure Google Cloud Gmail/Pub/Sub resources for end-to-end testing.
+3. After Google Cloud billing is linked, create the Gmail events topic/authenticated push subscription and complete end-to-end testing.
 
 ## Decision log
 
