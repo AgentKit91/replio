@@ -1,6 +1,6 @@
 # Replio Build Status
 
-**Overall:** M0 AND M1 COMPLETE; M2 IN PROGRESS
+**Overall:** M0 AND M1 COMPLETE; M2 ACTIVATION IN PROGRESS
 
 ## Current milestone
 
@@ -55,6 +55,9 @@ M2 — Gmail connection + labelled-thread ingestion
 - [x] Gmail API and Pub/Sub API enabled in the dedicated Replio Google Cloud project.
 - [x] Production Gmail OAuth callback added; a dedicated rotated client secret is stored only in Google Cloud and Vercel.
 - [x] Vercel Preview/Production server configuration includes Supabase backend access, Gmail token encryption and internal-worker secrets.
+- [x] Dedicated Pub/Sub topic, least-privilege Gmail publisher binding, authenticated push service account and push subscription created.
+- [x] M2 merged in PR #2 and deployed READY to Production.
+- [x] Low-cost Supabase Cron worker invocation authored at one queue poll per minute, inert until its Vault credential is installed.
 
 ## Tests last run
 
@@ -75,21 +78,23 @@ M2 — Gmail connection + labelled-thread ingestion
 - Applied `gmail_ingestion_foundation` and `gmail_sync_worker_boundary` to the dedicated hosted Supabase project.
 - Hosted security advisor reports no M2 schema/RLS findings; the remaining leaked-password warning does not apply to Google-only authentication.
 - PR #2 Preview deployment and both GitHub Actions jobs are green.
-- Vercel `replio` project is linked to GitHub; the PR branch preview is READY. A configuration-aware rebuild is triggered by the status commit that records the environment setup.
+- PR #2 merged as `86ac5eec`; its Vercel Production deployment is READY.
+- Google Cloud billing is linked under the free trial. A £5 monthly budget alert is configured; this is an alert rather than a hard spending cap.
+- Pub/Sub topic `replio-gmail-events` and authenticated push subscription `replio-gmail-push` are active with acknowledged-message retention disabled and 31-day inactivity expiry.
 
 ## Known blockers
 
 1. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
-2. The Google Cloud project has no billing account. Pub/Sub topic creation is rejected until the founder links billing; this blocks the Gmail watch/topic/subscription end-to-end activation but not further local feature work.
+2. End-to-end Gmail activation still requires storing the worker credential in Supabase Vault and completing the founder Gmail consent flow on Production.
 3. Docker is unavailable on this host; database/pgTAP verification runs in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
 
 ## Next three tasks
 
-1. Validate and apply the M2 migration, including RLS and advisor review.
-2. Implement the durable history-sync worker and idempotent labelled-thread ingestion.
-3. After Google Cloud billing is linked, create the Gmail events topic/authenticated push subscription and complete end-to-end testing.
+1. Apply the scheduled-worker migration and store the matching worker credential in Supabase Vault.
+2. Complete founder Gmail consent on Production and validate the watch, push, queue and worker path end to end.
+3. Close M2 and begin M3 only after the labelled-thread ingestion evidence is recorded.
 
 ## Decision log
 
