@@ -2,7 +2,7 @@ import "server-only";
 import { generateText, Output } from "ai";
 import { z } from "zod";
 
-export interface AiRunResult<T> { output: T; provider: string; model: string; inputTokens: number; outputTokens: number; latencyMs: number; }
+export interface AiRunResult<T> { output: T; provider: string; model: string; inputTokens: number; outputTokens: number; estimatedCostMicrounits: number | null; latencyMs: number; }
 export interface AiGateway { run<T>(request: { worker: string; schema: z.ZodType<T>; system: string; prompt: string; userId: string; maxOutputTokens: number }): Promise<AiRunResult<T>>; }
 
 export class VercelAiGateway implements AiGateway {
@@ -12,6 +12,9 @@ export class VercelAiGateway implements AiGateway {
     if (Math.ceil(prompt.length / 4) > 12000) throw new Error("AI input exceeds the per-run budget");
     const started = Date.now();
     const result = await generateText({ model: this.model, system, prompt, maxOutputTokens, output: Output.object({ schema }), providerOptions: { gateway: { user: userId, tags: [`worker:${worker}`, `env:${process.env.APP_ENV ?? "development"}`] } } });
-    return { output: result.output, provider: "vercel-ai-gateway", model: this.model, inputTokens: result.usage.inputTokens ?? 0, outputTokens: result.usage.outputTokens ?? 0, latencyMs: Date.now() - started };
+    const inputTokens = result.usage.inputTokens ?? 0; const outputTokens = result.usage.outputTokens ?? 0;
+    const inputRate = Number(process.env.AI_INPUT_COST_MICRO_PER_MILLION); const outputRate = Number(process.env.AI_OUTPUT_COST_MICRO_PER_MILLION);
+    const estimatedCostMicrounits = Number.isFinite(inputRate) && Number.isFinite(outputRate) ? Math.ceil((inputTokens * inputRate + outputTokens * outputRate) / 1_000_000) : null;
+    return { output: result.output, provider: "vercel-ai-gateway", model: this.model, inputTokens, outputTokens, estimatedCostMicrounits, latencyMs: Date.now() - started };
   }
 }

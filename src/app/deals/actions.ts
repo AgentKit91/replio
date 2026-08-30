@@ -38,3 +38,11 @@ export async function recycleDeal(formData: FormData) {
   revalidatePath("/deals"); revalidatePath("/deals/recycle-bin");
   redirect(recycled ? "/deals" : `/deals/${dealId}`);
 }
+
+export async function requestDealAnalysis(formData: FormData) {
+  const dealId = idSchema.parse(formData.get("dealId"));
+  const { supabase } = await requireUser();
+  const { error } = await supabase.rpc("request_deal_analysis", { p_deal_id: dealId });
+  if (error) throw new Error("Unable to queue analysis.");
+  revalidatePath(`/deals/${dealId}`);
+}
