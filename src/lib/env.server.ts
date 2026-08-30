@@ -13,6 +13,9 @@ const serverSchema = z.object({
   GMAIL_TOKEN_ENCRYPTION_KEY: z.string().min(1).optional(),
   GMAIL_TOKEN_ENCRYPTION_KEY_VERSION: z.string().min(1).default("v1"),
   INTERNAL_JOB_SECRET: z.string().min(24).optional(),
+  AI_GATEWAY_MODEL: z.string().regex(/^[a-z0-9-]+\/[a-z0-9.-]+$/).optional(),
+  AI_INPUT_COST_MICRO_PER_MILLION: z.coerce.number().nonnegative().optional(),
+  AI_OUTPUT_COST_MICRO_PER_MILLION: z.coerce.number().nonnegative().optional(),
 });
 
 export const serverEnv = serverSchema.parse({
@@ -27,6 +30,9 @@ export const serverEnv = serverSchema.parse({
   GMAIL_TOKEN_ENCRYPTION_KEY: process.env.GMAIL_TOKEN_ENCRYPTION_KEY || undefined,
   GMAIL_TOKEN_ENCRYPTION_KEY_VERSION: process.env.GMAIL_TOKEN_ENCRYPTION_KEY_VERSION,
   INTERNAL_JOB_SECRET: process.env.INTERNAL_JOB_SECRET || undefined,
+  AI_GATEWAY_MODEL: process.env.AI_GATEWAY_MODEL || undefined,
+  AI_INPUT_COST_MICRO_PER_MILLION: process.env.AI_INPUT_COST_MICRO_PER_MILLION || undefined,
+  AI_OUTPUT_COST_MICRO_PER_MILLION: process.env.AI_OUTPUT_COST_MICRO_PER_MILLION || undefined,
 });
 
 export function requireGmailServerEnv() {

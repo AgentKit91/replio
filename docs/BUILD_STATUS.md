@@ -1,10 +1,10 @@
 # Replio Build Status
 
-**Overall:** M0, M1 AND M2 COMPLETE; M3 IN PROGRESS
+**Overall:** M0–M3 COMPLETE; M4 IN PROGRESS
 
 ## Current milestone
 
-M3 — Deal domain + workspace UX
+M4 — AI pipeline
 
 ## Completed
 
@@ -66,22 +66,32 @@ M3 — Deal domain + workspace UX
 
 ### M3 — Deal domain + workspace UX
 
-- [ ] Deals list, search and status filters.
-- [ ] Brands, contacts and private notes.
-- [ ] Responsive Deal Workspace with conversation and commercial-detail panes.
-- [ ] Human-readable state transitions, offers, terms and deliverables.
-- [ ] Activity timeline and recycle bin.
+- [x] Deals list, search and status filters.
+- [x] Brands, contacts and private notes.
+- [x] Responsive Deal Workspace with conversation and commercial-detail panes.
+- [x] Human-readable state transitions, offers, terms and deliverables.
+- [x] Attachment references, activity timeline and 30-day recycle bin.
+- [x] Consumer email providers are excluded from automatic brand inference.
+
+### M4 — AI pipeline
+
+- [ ] Provider/gateway adapter and five fixed typed workers.
+- [ ] Immutable analysis snapshots, facts/evidence and worker cost ledger.
+- [ ] Durable AI analysis queue with retry/fallback and progressive updates.
+- [ ] Versioned Knowledge Library structure and non-production fixture corpus.
 
 ## Tests last run
 
-28 Aug 2026:
+30 Aug 2026:
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
 - `pnpm test` — pass (7 tests).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
 - GitHub Actions `app` job — pass.
-- GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, 8 pgTAP assertions).
+- GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M3 tenant-isolation assertions).
+- PR #7 and data-quality follow-up PR #8 — app, database and Vercel checks pass.
+- Production read-through — real Deal list, split workspace, message thread and Brands route render successfully.
 - Hosted pgTAP Gmail idempotency transaction — pass (6 assertions; rolled back).
 
 ## Migrations/deployments
@@ -96,6 +106,8 @@ M3 — Deal domain + workspace UX
 - Pub/Sub topic `replio-gmail-events` and authenticated push subscription `replio-gmail-push` are active with acknowledged-message retention disabled and 31-day inactivity expiry.
 - PRs #4–#6 added privacy-safe webhook diagnostics and the 64-bit-safe Gmail history parser; all app/database CI checks passed.
 - Production deployment `a3e600c` is READY; webhook, queue and worker completed the first labelled-thread sync end to end.
+- M3 migrations applied to hosted Supabase; one active fixture Deal remains intact, brand/contact inference is intentionally skipped for consumer email domains, and the daily expired-deal purge is scheduled.
+- PR #7 merged and production deployment `68dae27` reached READY; PR #8 merged the consumer-domain data-quality correction.
 
 ## Known blockers
 
@@ -107,9 +119,9 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Add the M3 brands, contacts, notes, offers, terms, deliverables and timeline schema with tenant-isolation tests.
-2. Build responsive deal list/search/filter and Deal Workspace routes against the real labelled fixture Deal.
-3. Add human-readable state actions and recycle-bin restore flow, then verify the complete non-AI experience on mobile and desktop.
+1. Define the M4 immutable analysis, evidence, knowledge-version and worker-run schema with tenant-isolation tests.
+2. Add a provider-neutral gateway and five fixed Zod-validated worker contracts with fixture-only tests.
+3. Add the durable `ai_analysis` queue and progressive Deal Workspace analysis states without blocking conversation access.
 
 ## Decision log
 
