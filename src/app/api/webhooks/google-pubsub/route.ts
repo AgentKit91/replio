@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ZodError } from "zod";
 import { parsePubSubEnvelope, verifyPubSubBearer } from "@/features/gmail/pubsub";
 import { serverEnv } from "@/lib/env.server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -19,7 +20,11 @@ export async function POST(request: NextRequest) {
   try {
     parsed = parsePubSubEnvelope(await request.json());
   } catch (error) {
-    console.warn("gmail_pubsub_rejected", { stage: "payload", reason: error instanceof Error ? error.name : "unknown" });
+    console.warn("gmail_pubsub_rejected", {
+      stage: "payload",
+      reason: error instanceof Error ? error.name : "unknown",
+      paths: error instanceof ZodError ? error.issues.slice(0, 5).map((issue) => issue.path.join(".")) : undefined,
+    });
     return NextResponse.json({ error: "Invalid push notification" }, { status: 400 });
   }
 
