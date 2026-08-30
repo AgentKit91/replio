@@ -1,10 +1,10 @@
 # Replio Build Status
 
-**Overall:** M0 AND M1 COMPLETE; M2 ACTIVATION IN PROGRESS
+**Overall:** M0, M1 AND M2 COMPLETE; M3 IN PROGRESS
 
 ## Current milestone
 
-M2 — Gmail connection + labelled-thread ingestion
+M3 — Deal domain + workspace UX
 
 ## Completed
 
@@ -58,6 +58,19 @@ M2 — Gmail connection + labelled-thread ingestion
 - [x] Dedicated Pub/Sub topic, least-privilege Gmail publisher binding, authenticated push service account and push subscription created.
 - [x] M2 merged in PR #2 and deployed READY to Production.
 - [x] Low-cost Supabase Cron worker invocation authored at one queue poll per minute, inert until its Vault credential is installed.
+- [x] Dedicated Supabase backend secret installed for Vercel Production and Preview; scheduled worker authentication verified with a 204 empty-queue response.
+- [x] Founder added as the sole Google OAuth test user and separate Gmail consent completed on Production.
+- [x] Production Gmail connection created the Replio label, active watch, expiry and exact history cursor; refresh token is stored encrypted server-side.
+- [x] Authenticated Pub/Sub push accepted with HTTP 204 after preserving Gmail's unquoted 64-bit history ID without JavaScript number coercion.
+- [x] Durable sync event completed, queue drained to zero, and the existing labelled fixture conversation produced exactly one Deal and one message.
+
+### M3 — Deal domain + workspace UX
+
+- [ ] Deals list, search and status filters.
+- [ ] Brands, contacts and private notes.
+- [ ] Responsive Deal Workspace with conversation and commercial-detail panes.
+- [ ] Human-readable state transitions, offers, terms and deliverables.
+- [ ] Activity timeline and recycle bin.
 
 ## Tests last run
 
@@ -81,20 +94,22 @@ M2 — Gmail connection + labelled-thread ingestion
 - PR #2 merged as `86ac5eec`; its Vercel Production deployment is READY.
 - Google Cloud billing is linked under the free trial. A £5 monthly budget alert is configured; this is an alert rather than a hard spending cap.
 - Pub/Sub topic `replio-gmail-events` and authenticated push subscription `replio-gmail-push` are active with acknowledged-message retention disabled and 31-day inactivity expiry.
+- PRs #4–#6 added privacy-safe webhook diagnostics and the 64-bit-safe Gmail history parser; all app/database CI checks passed.
+- Production deployment `a3e600c` is READY; webhook, queue and worker completed the first labelled-thread sync end to end.
 
 ## Known blockers
 
 1. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
-2. End-to-end Gmail activation still requires storing the worker credential in Supabase Vault and completing the founder Gmail consent flow on Production.
+2. Public launch still requires founder-approved Privacy Policy/Terms wording and completing Google verification for the restricted Gmail scope.
 3. Docker is unavailable on this host; database/pgTAP verification runs in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
 
 ## Next three tasks
 
-1. Apply the scheduled-worker migration and store the matching worker credential in Supabase Vault.
-2. Complete founder Gmail consent on Production and validate the watch, push, queue and worker path end to end.
-3. Close M2 and begin M3 only after the labelled-thread ingestion evidence is recorded.
+1. Add the M3 brands, contacts, notes, offers, terms, deliverables and timeline schema with tenant-isolation tests.
+2. Build responsive deal list/search/filter and Deal Workspace routes against the real labelled fixture Deal.
+3. Add human-readable state actions and recycle-bin restore flow, then verify the complete non-AI experience on mobile and desktop.
 
 ## Decision log
 
