@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePubSubEnvelope } from "./pubsub";
+import { parsePubSubEnvelope } from "./pubsub-payload";
 
 function envelope(notification: string) {
   return { message: { data: Buffer.from(notification).toString("base64"), messageId: "message-1" } };
