@@ -5,6 +5,7 @@ import { requireUser } from "@/features/auth/require-user";
 import { dealState, dealStates } from "@/features/deals/state";
 import { commercialExtractorOutput, pricingOutput, replyOutput, riskOutput, strategyOutput } from "@/features/ai/contracts";
 import { AnalysisAutoRefresh } from "@/features/ai/AnalysisAutoRefresh";
+import { ReplyComposer } from "@/features/deals/ReplyComposer";
 import { serverEnv } from "@/lib/env.server";
 import { addDealNote, recycleDeal, requestDealAnalysis, updateDealState } from "../actions";
 
@@ -29,6 +30,10 @@ export default async function DealWorkspace({ params }: { params: Promise<{ id: 
   const state = dealState(deal.status);
   const output=(snapshot?.structured_output??{}) as Record<string,unknown>;
   const { data: workerRuns } = snapshot ? await supabase.from("ai_worker_runs").select("worker_name,state,estimated_cost_microunits").eq("snapshot_id",snapshot.id).order("started_at") : { data: [] };
+  const [{data:analysisScore},{data:replyDraft}]=await Promise.all([
+    snapshot?supabase.from("analysis_scores").select("score,components,improvement_actions").eq("snapshot_id",snapshot.id).maybeSingle():Promise.resolve({data:null}),
+    supabase.from("reply_drafts").select("subject,body,version,state").eq("deal_id",deal.id).maybeSingle(),
+  ]);
   const analysisActive=snapshot?.state === "queued" || snapshot?.state === "running" || snapshot?.state === "partial";
   const estimatedCost=(workerRuns??[]).reduce((total,run)=>total+(run.estimated_cost_microunits??0),0)/1_000_000;
   const extraction=commercialExtractorOutput.safeParse(output.commercial_extractor);
@@ -43,7 +48,9 @@ export default async function DealWorkspace({ params }: { params: Promise<{ id: 
           {snapshot?.state === "failed" && <p className="error-text">Analysis could not complete. You can retry without losing the Deal or conversation.</p>}
           {(!snapshot || snapshot.state === "failed") && <form action={requestDealAnalysis}><input type="hidden" name="dealId" value={deal.id}/><button className="button button-primary" disabled={!serverEnv.AI_GATEWAY_MODEL}>{serverEnv.AI_GATEWAY_MODEL ? snapshot ? "Retry analysis" : "Analyse deal" : "AI activation pending"}</button></form>}
           {pricing.success && <div className="recommendation-grid"><div><span>Ideal ask</span><strong>{new Intl.NumberFormat("en-GB",{style:"currency",currency:pricing.data.currency}).format(pricing.data.ideal_ask_minor/100)}</strong></div><div><span>Expected</span><strong>{new Intl.NumberFormat("en-GB",{style:"currency",currency:pricing.data.currency}).format(pricing.data.expected_settlement_minor/100)}</strong></div><div><span>Minimum worthwhile</span><strong>{new Intl.NumberFormat("en-GB",{style:"currency",currency:pricing.data.currency}).format(pricing.data.minimum_worthwhile_minor/100)}</strong></div></div>}
+          {analysisScore && <div className="score-panel"><div><span>Replio Score</span><strong>{analysisScore.score}</strong><small>/ 100</small></div><section><h3>What would improve this?</h3><ul>{(analysisScore.improvement_actions as string[]).map((action)=><li key={action}>{action}</li>)}</ul></section></div>}
           {extraction.success && extraction.data.missing_material_terms.length>0 && <p className="analysis-caveat"><strong>Needs clarification:</strong> {extraction.data.missing_material_terms.join(", ")}</p>}
+          {extraction.success && <details className="evidence-panel"><summary>Why? View source evidence</summary><ul>{[...extraction.data.offers,...extraction.data.deliverables,...extraction.data.terms].flatMap((fact)=>fact.evidence).map((item,index)=><li key={`${item.message_id}-${index}`}><a href={`#message-${item.message_id}`}>{item.excerpt}</a><small>{item.locator}</small></li>)}</ul></details>}
           {risks.success && <ul className="risk-list">{risks.data.risks.map((risk,index)=><li key={`${risk.category}-${index}`}><strong>{risk.summary}</strong><span>{risk.severity} priority</span></li>)}</ul>}
           {strategy.success && <div><h3>Negotiation approach</h3><p>{strategy.data.primary_objective}</p><ol>{strategy.data.sequence.map((step,index)=><li key={index}>{step}</li>)}</ol></div>}
           {reply.success && <div><h3>Suggested reply</h3><div className="draft-preview"><strong>{reply.data.subject}</strong><p>{reply.data.body}</p></div></div>}
@@ -58,7 +65,7 @@ export default async function DealWorkspace({ params }: { params: Promise<{ id: 
         <section className="workspace-card"><h2>Private notes</h2><form action={addDealNote} className="note-form"><input type="hidden" name="dealId" value={deal.id}/><textarea name="body" required maxLength={10000} placeholder="Add context only you can see" aria-label="Private note"/><button className="button button-primary">Save note</button></form>{notes?.map((note) => <article className="note" key={note.id}><p>{note.body}</p><time>{new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(note.created_at))}</time></article>)}</section>
         <section className="workspace-card"><h2>Activity</h2>{activity?.length ? <ol className="timeline">{activity.map((event) => <li key={event.id}><strong>{event.event_type.replaceAll("_", " ")}</strong><time>{new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(event.created_at))}</time></li>)}</ol> : <p className="muted">Activity will appear as the deal changes.</p>}</section>
       </section>
-      <section className="conversation-pane" aria-label="Email conversation"><div className="conversation-heading"><p className="eyebrow">Conversation</p><h2>Email thread</h2></div>{messages?.length ? messages.map((message) => <article className={`message-card message-${message.direction}`} key={message.id}><header><strong>{message.direction === "outbound" ? "You" : message.from_address}</strong><time>{new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(message.internal_date))}</time></header>{message.subject && <p className="message-subject">{message.subject}</p>}<p className="message-body">{message.body_text || "No plain-text content."}</p>{attachments?.filter((file) => file.gmail_message_id === message.id).map((file) => <span className="attachment" key={file.id}>📎 {file.filename}</span>)}</article>) : <p className="muted">No messages have synced for this deal yet.</p>}</section>
+      <section className="conversation-pane" aria-label="Email conversation"><div className="conversation-heading"><p className="eyebrow">Conversation</p><h2>Email thread</h2></div>{messages?.length ? messages.map((message) => <article id={`message-${message.id}`} className={`message-card message-${message.direction}`} key={message.id}><header><strong>{message.direction === "outbound" ? "You" : message.from_address}</strong><time>{new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(message.internal_date))}</time></header>{message.subject && <p className="message-subject">{message.subject}</p>}<p className="message-body">{message.body_text || "No plain-text content."}</p>{attachments?.filter((file) => file.gmail_message_id === message.id).map((file) => <span className="attachment" key={file.id}>📎 {file.filename}</span>)}</article>) : <p className="muted">No messages have synced for this deal yet.</p>}{replyDraft?.state==="draft"&&<ReplyComposer draft={{dealId:deal.id,subject:replyDraft.subject,body:replyDraft.body,version:replyDraft.version}}/>}</section>
     </div>
   </AppShell>;
 }
