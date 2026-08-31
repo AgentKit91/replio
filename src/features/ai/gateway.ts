@@ -1,5 +1,5 @@
 import "server-only";
-import { generateText, Output } from "ai";
+import { gateway, generateText, Output } from "ai";
 import { z } from "zod";
 
 export interface AiRunResult<T> { output: T; provider: string; model: string; inputTokens: number; outputTokens: number; estimatedCostMicrounits: number | null; latencyMs: number; }
@@ -11,10 +11,13 @@ export class VercelAiGateway implements AiGateway {
     if (!this.model) throw new Error("AI_GATEWAY_MODEL is not configured");
     if (Math.ceil(prompt.length / 4) > 12000) throw new Error("AI input exceeds the per-run budget");
     const started = Date.now();
-    const result = await generateText({ model: this.model, system, prompt, maxOutputTokens, output: Output.object({ schema }), providerOptions: { gateway: { user: userId, tags: [`worker:${worker}`, `env:${process.env.APP_ENV ?? "development"}`] } } });
+    const fallbackModel=process.env.AI_GATEWAY_FALLBACK_MODEL;
+    const result = await generateText({ model: this.model, system, prompt, maxOutputTokens, output: Output.object({ schema }), providerOptions: { gateway: { user: userId, tags: [`worker:${worker}`, `env:${process.env.APP_ENV ?? "development"}`], ...(fallbackModel?{models:[fallbackModel]}:{}) } } });
     const inputTokens = result.usage.inputTokens ?? 0; const outputTokens = result.usage.outputTokens ?? 0;
     const inputRate = Number(process.env.AI_INPUT_COST_MICRO_PER_MILLION); const outputRate = Number(process.env.AI_OUTPUT_COST_MICRO_PER_MILLION);
-    const estimatedCostMicrounits = Number.isFinite(inputRate) && Number.isFinite(outputRate) ? Math.ceil((inputTokens * inputRate + outputTokens * outputRate) / 1_000_000) : null;
+    let estimatedCostMicrounits = Number.isFinite(inputRate) && Number.isFinite(outputRate) ? Math.ceil((inputTokens * inputRate + outputTokens * outputRate) / 1_000_000) : null;
+    const generationId=result.providerMetadata?.gateway?.generationId;
+    if(typeof generationId==="string") try { const generation=await gateway.getGenerationInfo({id:generationId}); estimatedCostMicrounits=Math.ceil(generation.totalCost*1_000_000); } catch { /* Retain the configured rate estimate if generation lookup is briefly unavailable. */ }
     return { output: result.output, provider: "vercel-ai-gateway", model: this.model, inputTokens, outputTokens, estimatedCostMicrounits, latencyMs: Date.now() - started };
   }
 }
