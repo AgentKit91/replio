@@ -46,3 +46,10 @@ export async function requestDealAnalysis(formData: FormData) {
   if (error) throw new Error("Unable to queue analysis.");
   revalidatePath(`/deals/${dealId}`);
 }
+
+const saveReplySchema=z.object({dealId:z.uuid(),subject:z.string().max(998),body:z.string().max(100000),expectedVersion:z.number().int().positive()});
+export async function saveReplyDraft(input:z.infer<typeof saveReplySchema>):Promise<{ok:true;version:number}|{ok:false}> {
+  const value=saveReplySchema.parse(input); const {supabase}=await requireUser();
+  const {data,error}=await supabase.rpc("save_reply_draft",{p_deal_id:value.dealId,p_subject:value.subject,p_body:value.body,p_expected_version:value.expectedVersion});
+  if(error||typeof data!=="number") return {ok:false}; revalidatePath(`/deals/${value.dealId}`); return {ok:true,version:data};
+}

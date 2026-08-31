@@ -5,6 +5,7 @@ import { z } from "zod";
 import { type AiGateway } from "./gateway";
 import { workerContracts, type WorkerName } from "./contracts";
 import { extractionFactRows } from "./facts";
+import { calculateDealScore } from "./score";
 
 type Message = { id: string; direction: "inbound"|"outbound"; subject: string; body_text: string; internal_date: string };
 const order: WorkerName[] = ["commercial_extractor","pricing_engine","risk_engine","strategy_engine","reply_engine"];
@@ -40,5 +41,14 @@ export async function runDealAnalysis(input:{ admin:SupabaseClient; gateway:AiGa
   const { error: deleteFactsError } = await input.admin.from("analysis_facts").delete().eq("snapshot_id",input.snapshotId).eq("source_owner","ai_extraction");
   if(deleteFactsError) throw deleteFactsError;
   if(rows.length){const { error: insertFactsError }=await input.admin.from("analysis_facts").insert(rows); if(insertFactsError) throw insertFactsError;}
+  const pricing=workerContracts.pricing_engine.parse(combined.pricing_engine); const risks=workerContracts.risk_engine.parse(combined.risk_engine); const reply=workerContracts.reply_engine.parse(combined.reply_engine);
+  const {data:scoreVersion,error:scoreVersionError}=await input.admin.from("score_versions").select("id,config").eq("state","current").single(); if(scoreVersionError) throw scoreVersionError;
+  const score=calculateDealScore(scoreVersion.config,extraction,pricing,risks);
+  const {error:scoreError}=await input.admin.from("analysis_scores").upsert({workspace_id:input.workspaceId,snapshot_id:input.snapshotId,deal_id:input.dealId,score_version_id:scoreVersion.id,score:score.score,components:score.components,improvement_actions:score.improvementActions},{onConflict:"snapshot_id"}); if(scoreError) throw scoreError;
+  const {error:snapshotScoreError}=await input.admin.from("analysis_snapshots").update({score:score.score,score_version_id:scoreVersion.id}).eq("id",input.snapshotId); if(snapshotScoreError) throw snapshotScoreError;
+  const {data:thread,error:threadError}=await input.admin.from("deal_threads").select("id,provider_thread_id").eq("deal_id",input.dealId).eq("thread_role","primary").single(); if(threadError) throw threadError;
+  const existingDraft=await input.admin.from("reply_drafts").select("id,version,subject,body,source_snapshot_id").eq("deal_id",input.dealId).maybeSingle(); if(existingDraft.error) throw existingDraft.error; let draft=existingDraft.data;
+  if(!draft){const created=await input.admin.from("reply_drafts").insert({workspace_id:input.workspaceId,deal_id:input.dealId,deal_thread_id:thread.id,subject:reply.subject,body:reply.body,source_snapshot_id:input.snapshotId,provider_thread_id:thread.provider_thread_id}).select("id,version,subject,body,source_snapshot_id").single(); if(created.error) throw created.error; draft=created.data;}
+  if(draft.source_snapshot_id===input.snapshotId&&draft.version===1){const {error:versionError}=await input.admin.from("reply_versions").upsert({workspace_id:input.workspaceId,reply_draft_id:draft.id,version:1,subject:draft.subject,body:draft.body,change_kind:"ai_initial",source_snapshot_id:input.snapshotId},{onConflict:"reply_draft_id,version",ignoreDuplicates:true}); if(versionError) throw versionError;}
   return combined;
 }
