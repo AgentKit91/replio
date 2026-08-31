@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { type AiGateway } from "./gateway";
 import { workerContracts, type WorkerName } from "./contracts";
+import { extractionFactRows } from "./facts";
 
 type Message = { id: string; direction: "inbound"|"outbound"; subject: string; body_text: string; internal_date: string };
 const order: WorkerName[] = ["commercial_extractor","pricing_engine","risk_engine","strategy_engine","reply_engine"];
@@ -34,5 +35,10 @@ export async function runDealAnalysis(input:{ admin:SupabaseClient; gateway:AiGa
       await input.admin.from("ai_worker_runs").update({state:"failed",latency_ms:Date.now()-started,error_class:errorClass,completed_at:new Date().toISOString()}).eq("snapshot_id",input.snapshotId).eq("worker_name",worker); throw error;
     }
   }
+  const extraction = workerContracts.commercial_extractor.parse(combined.commercial_extractor);
+  const rows = extractionFactRows(extraction,{workspaceId:input.workspaceId,snapshotId:input.snapshotId,dealId:input.dealId});
+  const { error: deleteFactsError } = await input.admin.from("analysis_facts").delete().eq("snapshot_id",input.snapshotId).eq("source_owner","ai_extraction");
+  if(deleteFactsError) throw deleteFactsError;
+  if(rows.length){const { error: insertFactsError }=await input.admin.from("analysis_facts").insert(rows); if(insertFactsError) throw insertFactsError;}
   return combined;
 }

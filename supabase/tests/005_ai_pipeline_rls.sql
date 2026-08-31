@@ -1,4 +1,4 @@
-begin; set search_path=public,extensions; select plan(7);
+begin; set search_path=public,extensions; select plan(12);
 insert into auth.users(id,email) values('00000000-0000-4000-8000-000000000051','ai-one@example.test'),('00000000-0000-4000-8000-000000000052','ai-two@example.test');
 insert into public.deals(workspace_id,title) select workspace_id,'AI fixture deal' from public.workspace_members where user_id='00000000-0000-4000-8000-000000000051' returning id as deal_id \gset
 set local role authenticated; set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000051","role":"authenticated"}';
@@ -10,4 +10,13 @@ select is((select count(*)::int from public.analysis_snapshots),1,'unchanged req
 set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000052","role":"authenticated"}';
 select is((select count(*)::int from public.analysis_snapshots),0,'other tenant cannot see snapshot');
 select throws_ok(format('select public.request_deal_analysis(%L)', :'deal_id'),'P0002','deal not found','other tenant cannot enqueue analysis');
+reset role; set local role service_role; set local request.jwt.claims='{"role":"service_role"}';
+create temporary table claimed_ai_job as select public.claim_ai_analysis() as job;
+select is((select state::text from public.analysis_snapshots limit 1),'running','service claim marks snapshot running');
+select lives_ok($$select public.finish_ai_analysis((job->>'queue_message_id')::bigint,(job->>'job_id')::uuid,false,'TransientProviderError') from claimed_ai_job$$,'transient failure is recorded');
+select is((select state::text from public.analysis_snapshots limit 1),'queued','analysis retries below the cap');
+reset role; update private.ai_analysis_jobs set attempt_count=3;
+set local role service_role; set local request.jwt.claims='{"role":"service_role"}';
+select lives_ok($$select public.finish_ai_analysis((job->>'queue_message_id')::bigint,(job->>'job_id')::uuid,false,'InvalidStructuredOutput') from claimed_ai_job$$,'third failure becomes terminal');
+select is((select state::text from public.analysis_snapshots limit 1),'failed','retry cap leaves a terminal failed snapshot');
 select * from finish(); rollback;

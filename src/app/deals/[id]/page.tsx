@@ -4,6 +4,7 @@ import { AppShell } from "@/components/replio/AppShell";
 import { requireUser } from "@/features/auth/require-user";
 import { dealState, dealStates } from "@/features/deals/state";
 import { commercialExtractorOutput, pricingOutput, replyOutput, riskOutput, strategyOutput } from "@/features/ai/contracts";
+import { AnalysisAutoRefresh } from "@/features/ai/AnalysisAutoRefresh";
 import { serverEnv } from "@/lib/env.server";
 import { addDealNote, recycleDeal, requestDealAnalysis, updateDealState } from "../actions";
 
@@ -27,9 +28,13 @@ export default async function DealWorkspace({ params }: { params: Promise<{ id: 
   const { data: attachments } = messageIds.length ? await supabase.from("gmail_attachment_references").select("id,gmail_message_id,filename,mime_type,size_bytes").in("gmail_message_id", messageIds) : { data: [] };
   const state = dealState(deal.status);
   const output=(snapshot?.structured_output??{}) as Record<string,unknown>;
+  const { data: workerRuns } = snapshot ? await supabase.from("ai_worker_runs").select("worker_name,state,estimated_cost_microunits").eq("snapshot_id",snapshot.id).order("started_at") : { data: [] };
+  const analysisActive=snapshot?.state === "queued" || snapshot?.state === "running" || snapshot?.state === "partial";
+  const estimatedCost=(workerRuns??[]).reduce((total,run)=>total+(run.estimated_cost_microunits??0),0)/1_000_000;
   const extraction=commercialExtractorOutput.safeParse(output.commercial_extractor);
   const pricing=pricingOutput.safeParse(output.pricing_engine); const risks=riskOutput.safeParse(output.risk_engine); const strategy=strategyOutput.safeParse(output.strategy_engine); const reply=replyOutput.safeParse(output.reply_engine);
   return <AppShell>
+    <AnalysisAutoRefresh active={analysisActive}/>
     <header className="page-header deal-heading"><div><Link className="back-link" href="/deals">← Deals</Link><h1>{deal.title}</h1><p className="status-explainer"><span className={`status-pill status-${deal.status}`}>{state.label}</span> {state.detail}</p></div><form action={recycleDeal}><input type="hidden" name="dealId" value={deal.id}/><input type="hidden" name="recycled" value="true"/><button className="button button-secondary">Move to recycle bin</button></form></header>
     <div className="workspace-grid">
       <section className="workspace-analysis" aria-label="Commercial details">
@@ -42,6 +47,7 @@ export default async function DealWorkspace({ params }: { params: Promise<{ id: 
           {risks.success && <ul className="risk-list">{risks.data.risks.map((risk,index)=><li key={`${risk.category}-${index}`}><strong>{risk.summary}</strong><span>{risk.severity} priority</span></li>)}</ul>}
           {strategy.success && <div><h3>Negotiation approach</h3><p>{strategy.data.primary_objective}</p><ol>{strategy.data.sequence.map((step,index)=><li key={index}>{step}</li>)}</ol></div>}
           {reply.success && <div><h3>Suggested reply</h3><div className="draft-preview"><strong>{reply.data.subject}</strong><p>{reply.data.body}</p></div></div>}
+          {!!workerRuns?.length && <div><h3>Worker progress</h3><ul className="fact-list">{workerRuns.map((run)=><li key={run.worker_name}><span>{run.worker_name.replaceAll("_"," ")}</span><strong>{run.state}</strong></li>)}</ul><p className="muted">Estimated analysis cost so far: ${estimatedCost.toFixed(4)}</p></div>}
         </section>
         <section className="workspace-card"><div className="section-heading"><div><p className="eyebrow">Next move</p><h2>Deal state</h2></div></div><form action={updateDealState} className="state-form"><input type="hidden" name="dealId" value={deal.id}/><select name="status" defaultValue={deal.status} aria-label="Deal state">{Object.entries(dealStates).map(([value, copy]) => <option value={value} key={value}>{copy.label}</option>)}</select><button className="button button-primary">Update state</button></form></section>
         <section className="workspace-card"><h2>Commercial snapshot</h2><dl className="detail-grid"><div><dt>Current offer</dt><dd>{deal.current_offer_minor === null ? "Not recorded" : new Intl.NumberFormat("en-GB", { style: "currency", currency: deal.currency }).format(deal.current_offer_minor / 100)}</dd></div><div><dt>Platform</dt><dd>{deal.primary_platform ?? "Not confirmed"}</dd></div></dl>
