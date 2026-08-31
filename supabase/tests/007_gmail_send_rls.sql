@@ -18,10 +18,15 @@ select throws_ok(format('select public.request_reply_send(%L,2)',:'deal_id'),'P0
 reset role; set local role service_role; set local request.jwt.claims='{"role":"service_role"}';
 create temporary table claimed_send_job as select public.claim_gmail_send() as job;
 select isnt((select job from claimed_send_job),null::jsonb,'service worker claims queued reply');
+reset role;
 select is((select attempt_count from private.gmail_send_jobs where id=:'job_id'),1,'claim increments attempt count');
+set local role service_role; set local request.jwt.claims='{"role":"service_role"}';
 select lives_ok($$select public.fail_gmail_send((job->>'queue_message_id')::bigint,(job->>'job_id')::uuid,'TransientProviderError') from claimed_send_job$$,'transient failure is recorded');
+reset role;
 select is((select status from private.gmail_send_jobs where id=:'job_id'),'queued','send retries below cap');
 update private.gmail_send_jobs set attempt_count=3 where id=:'job_id';
+set local role service_role; set local request.jwt.claims='{"role":"service_role"}';
 select lives_ok($$select public.fail_gmail_send((job->>'queue_message_id')::bigint,(job->>'job_id')::uuid,'ProviderRejected') from claimed_send_job$$,'third failure becomes terminal');
+reset role;
 select is((select state from public.reply_drafts where id=:'draft_id'),'draft','terminal failure returns the editable draft');
 select * from finish(); rollback;
