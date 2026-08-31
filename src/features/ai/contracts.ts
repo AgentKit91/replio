@@ -14,6 +14,12 @@ export const pricingOutput = z.object({ ideal_ask_minor: z.number().int().nonneg
 export const riskOutput = z.object({ risks: z.array(z.object({ category: z.string(), severity: z.enum(["low","medium","high"]), summary: z.string(), clarification: z.string().nullable(), evidence: z.array(evidenceSchema) })), confidence });
 export const strategyOutput = z.object({ primary_objective: z.string(), sequence: z.array(z.string()), terms_to_clarify: z.array(z.string()), acceptable_concessions: z.array(z.string()), respectful_challenge: z.string().nullable(), confidence });
 export const replyOutput = z.object({ subject: z.string(), body: z.string(), strategy_preserved: z.literal(true), facts_used: z.array(z.string()), confidence });
+export const replyRewriteOutput = z.object({
+  body: z.string().min(1).max(100000),
+  strategy_preserved: z.literal(true),
+  changes_applied: z.array(z.string()).max(12),
+  confidence,
+});
 
 export const workerContracts = { commercial_extractor: commercialExtractorOutput, pricing_engine: pricingOutput, risk_engine: riskOutput, strategy_engine: strategyOutput, reply_engine: replyOutput } as const;
 export type WorkerName = keyof typeof workerContracts;

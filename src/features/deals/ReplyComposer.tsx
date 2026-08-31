@@ -2,23 +2,27 @@
 
 import { useCallback,useEffect,useRef,useState } from "react";
 import { useRouter } from "next/navigation";
-import { queueReplySend,saveReplyDraft } from "@/app/deals/actions";
+import { queueReplySend,rewriteReply,saveReplyDraft } from "@/app/deals/actions";
 
-type Draft={dealId:string;subject:string;body:string;version:number};
+type Draft={dealId:string;subject:string;body:string;version:number;challenge:string|null};
 export function ReplyComposer({draft}:{draft:Draft}){
   const [subject]=useState(draft.subject); const [body,setBody]=useState(draft.body); const [status,setStatus]=useState<"saved"|"saving"|"error">("saved");
-  const versionRef=useRef(draft.version); const pendingRef=useRef<{subject:string;body:string}|null>(null); const savingPromiseRef=useRef<Promise<boolean>|null>(null); const hydratedRef=useRef(false);
+  const [rewriteChoice,setRewriteChoice]=useState("shorter");const [customInstruction,setCustomInstruction]=useState("");const [rewriteError,setRewriteError]=useState("");const [rewriting,setRewriting]=useState(false);const [showChallenge,setShowChallenge]=useState(false);
+  const versionRef=useRef(draft.version); const pendingRef=useRef<{subject:string;body:string}|null>(null); const savingPromiseRef=useRef<Promise<boolean>|null>(null); const hydratedRef=useRef(false);const suppressAutoSaveRef=useRef(false);
   const router=useRouter();
   const flush=useCallback(async()=>{
     if(savingPromiseRef.current)return savingPromiseRef.current;
     const work=(async()=>{while(pendingRef.current){const next=pendingRef.current;pendingRef.current=null;setStatus("saving");const result=await saveReplyDraft({dealId:draft.dealId,...next,expectedVersion:versionRef.current});if(!result.ok){setStatus("error");return false;}versionRef.current=result.version;setStatus("saved");}return true;})();
     savingPromiseRef.current=work;const ok=await work;savingPromiseRef.current=null;return ok;
   },[draft.dealId]);
-  useEffect(()=>{if(!hydratedRef.current){hydratedRef.current=true;return;} pendingRef.current={subject,body};const timer=window.setTimeout(()=>void flush(),1000);return()=>window.clearTimeout(timer);},[subject,body,flush]);
-  async function send(){if(!window.confirm("Send this reply now from your connected Gmail account?"))return;pendingRef.current={subject,body};if(!await flush())return;const result=await queueReplySend({dealId:draft.dealId,expectedVersion:versionRef.current});if(!result.ok){setStatus("error");return;}router.refresh();}
+  useEffect(()=>{if(!hydratedRef.current){hydratedRef.current=true;return;}if(suppressAutoSaveRef.current){suppressAutoSaveRef.current=false;return;}pendingRef.current={subject,body};const timer=window.setTimeout(()=>void flush(),1000);return()=>window.clearTimeout(timer);},[subject,body,flush]);
+  async function rewrite(){const instruction=rewriteChoice==="custom"?customInstruction:rewriteChoice.replaceAll("_"," ");if(!instruction.trim())return;pendingRef.current={subject,body};if(!await flush())return;setRewriting(true);setRewriteError("");const result=await rewriteReply({dealId:draft.dealId,expectedVersion:versionRef.current,instruction,startAgain:rewriteChoice==="start_again"});setRewriting(false);if(!result.ok){setRewriteError(result.message);return;}versionRef.current=result.version;suppressAutoSaveRef.current=true;setBody(result.body);setStatus("saved");}
+  async function send(force=false){if(draft.challenge&&!force){setShowChallenge(true);return;}if(!window.confirm("Send this reply now from your connected Gmail account?"))return;pendingRef.current={subject,body};if(!await flush())return;const result=await queueReplySend({dealId:draft.dealId,expectedVersion:versionRef.current,acknowledgeChallenge:force});if(!result.ok){setStatus("error");return;}router.refresh();}
   return <section className="reply-composer" aria-label="Suggested reply editor"><div className="reply-composer-heading"><div><p className="eyebrow">Replio prepared a reply</p><h3>Edit before sending</h3></div><span className={`save-state save-${status}`}>{status==="saving"?"Saving…":status==="error"?"Save failed":"Saved"}</span></div>
     <label>Subject<input value={subject} maxLength={998} readOnly aria-describedby="thread-subject-note"/></label><small id="thread-subject-note" className="muted">Kept unchanged so Gmail preserves the conversation thread.</small>
     <label>Message<textarea value={body} maxLength={100000} onChange={(event)=>setBody(event.target.value)}/></label>
-    <div className="composer-actions"><p className="muted">Your edits are versioned automatically.</p><button type="button" className="button button-primary" onClick={()=>void send()} disabled={status==="saving"}>Send reply</button></div>
+    <div className="rewrite-controls"><label>Intentional rewrite<select value={rewriteChoice} onChange={(event)=>setRewriteChoice(event.target.value)}><option value="more_assertive">More assertive</option><option value="more_collaborative">More collaborative</option><option value="shorter">Shorter</option><option value="more_detailed">More detailed</option><option value="more_professional">More professional</option><option value="more_friendly">More friendly</option><option value="push_harder_on_price">Push harder on price</option><option value="focus_on_usage_rights">Focus on usage rights</option><option value="focus_on_payment_terms">Focus on payment terms</option><option value="custom">Custom instruction</option><option value="start_again">Start again</option></select></label>{rewriteChoice==="custom"&&<label>Instruction<input value={customInstruction} maxLength={500} onChange={(event)=>setCustomInstruction(event.target.value)}/></label>}<p className="muted">This sends this draft and its existing analysis to Replio&apos;s AI. Your edits are preserved unless you choose Start again.</p><button type="button" className="button button-secondary" onClick={()=>void rewrite()} disabled={rewriting||status==="saving"}>{rewriting?"Rewriting…":"Apply rewrite"}</button>{rewriteError&&<p className="error-text" role="alert">{rewriteError}</p>}</div>
+    {showChallenge&&draft.challenge&&<div className="challenge" role="alert"><strong>Before you send</strong><p>{draft.challenge}</p><div className="composer-actions"><button type="button" className="button button-secondary" onClick={()=>setShowChallenge(false)}>Review draft</button><button type="button" className="button button-primary" onClick={()=>void send(true)}>Send anyway</button></div></div>}
+    <div className="composer-actions"><p className="muted">Your edits are versioned automatically.</p><button type="button" className="button button-primary" onClick={()=>void send()} disabled={status==="saving"||rewriting}>Send reply</button></div>
   </section>;
 }

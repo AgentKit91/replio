@@ -81,13 +81,24 @@ M5 — Pricing, Score, strategy and reply/send
 - [x] Versioned, trust-tiered Knowledge Library structure with an explicitly non-production synthetic fixture corpus.
 - [x] Fabrication/structure/error-handling eval fixtures; provider failure leaves the Deal and conversation usable.
 
+### M5 — Pricing, Score, strategy and reply/send (in progress)
+
+- [x] Versioned provisional Score and pricing configuration with deterministic component scoring.
+- [x] Three ordered fee recommendations, risk/strategy presentation and message-linked evidence navigation.
+- [x] Integrated composer with serialized optimistic autosave and immutable creator-edit versions.
+- [x] Intentional targeted rewrites preserve the current creator draft and strategy; only explicit Start again may replace it wholesale.
+- [x] One-time respectful challenge offers Review draft and Send anyway without overriding the creator.
+- [x] Idempotent RFC-threaded Gmail delivery with reconciliation, bounded retries and explicit send confirmation.
+- [x] Successful sends appear immediately and move the Deal to Waiting on brand; later inbound replies move it to Your reply needed.
+- [ ] Consent-gated production E2E: labelled email → analysis → edit/rewrite → send → brand reply.
+
 ## Tests last run
 
 31 Aug 2026:
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
-- `pnpm test` — pass (24 tests across 9 files).
+- `pnpm test` — pass (29 tests across 11 files).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
 - GitHub Actions `app` job — pass.
 - GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
@@ -111,6 +122,8 @@ M5 — Pricing, Score, strategy and reply/send
 - PR #7 merged and production deployment `68dae27` reached READY; PR #8 merged the consumer-domain data-quality correction.
 - M4 pipeline and retry-cap migrations are applied to hosted Supabase; the AI queue remains empty until a creator explicitly requests analysis.
 - PR #10 merged as `4a9583d`; Production deployment `dpl_7A2byt9wL6nLK2ERVoaoJ9xPE4ss` is READY with the low-cost AI model configuration.
+- M5 score/composer and Gmail-send foundations merged in PRs #12–#14; the send queue remains empty and no production email has been sent.
+- PR #15 remediated every Supabase-advised missing foreign-key index; hosted performance advisor reports zero unindexed foreign keys.
 
 ## Known blockers
 
@@ -122,9 +135,9 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Add versioned Score and pricing configuration with provisional fixture calibration.
-2. Build evidence navigation plus the integrated autosaving, versioned reply composer.
-3. Add idempotent Gmail threading/send and state transitions, then exercise the loop with explicit transmission consent.
+1. Merge and apply intentional rewrite, respectful-challenge and Deal lifecycle completion.
+2. Exercise the M5 loop only after exact consent to transmit the selected fixture to AI and send a real Gmail reply.
+3. Begin M6 creator-owned goals, non-negotiables, rate cards and learning structures after M5 exit verification.
 
 ## Decision log
 

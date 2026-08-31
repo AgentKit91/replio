@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireUser } from "@/features/auth/require-user";
 import { dealStates } from "@/features/deals/state";
+import { replyRewriteOutput } from "@/features/ai/contracts";
+import { VercelAiGateway } from "@/features/ai/gateway";
 
 const idSchema = z.string().uuid();
 const stateSchema = z.enum(Object.keys(dealStates) as [keyof typeof dealStates, ...(keyof typeof dealStates)[]]);
@@ -53,7 +55,23 @@ export async function saveReplyDraft(input:z.infer<typeof saveReplySchema>):Prom
   const {data,error}=await supabase.rpc("save_reply_draft",{p_deal_id:value.dealId,p_subject:value.subject,p_body:value.body,p_expected_version:value.expectedVersion});
   if(error||typeof data!=="number") return {ok:false}; revalidatePath(`/deals/${value.dealId}`); return {ok:true,version:data};
 }
-const queueReplySchema=z.object({dealId:z.uuid(),expectedVersion:z.number().int().positive()});
+const queueReplySchema=z.object({dealId:z.uuid(),expectedVersion:z.number().int().positive(),acknowledgeChallenge:z.boolean().default(false)});
 export async function queueReplySend(input:z.infer<typeof queueReplySchema>):Promise<{ok:boolean}> {
-  const value=queueReplySchema.parse(input);const {supabase}=await requireUser();const {error}=await supabase.rpc("request_reply_send",{p_deal_id:value.dealId,p_expected_version:value.expectedVersion});if(error)return {ok:false};revalidatePath(`/deals/${value.dealId}`);return {ok:true};
+  const value=queueReplySchema.parse(input);const {supabase}=await requireUser();if(value.acknowledgeChallenge){const acknowledged=await supabase.rpc("acknowledge_reply_challenge",{p_deal_id:value.dealId});if(acknowledged.error)return {ok:false};}const {error}=await supabase.rpc("request_reply_send",{p_deal_id:value.dealId,p_expected_version:value.expectedVersion});if(error)return {ok:false};revalidatePath(`/deals/${value.dealId}`);return {ok:true};
+}
+
+const rewriteSchema=z.object({dealId:z.uuid(),expectedVersion:z.number().int().positive(),instruction:z.string().trim().min(1).max(500),startAgain:z.boolean()});
+export async function rewriteReply(input:z.infer<typeof rewriteSchema>):Promise<{ok:true;body:string;version:number}|{ok:false;message:string}>{
+  const value=rewriteSchema.parse(input);const {supabase,userId}=await requireUser();
+  const {data:draft,error:draftError}=await supabase.from("reply_drafts").select("body,version,state,source_snapshot_id").eq("deal_id",value.dealId).maybeSingle();
+  if(draftError||!draft||draft.state!=="draft"||draft.version!==value.expectedVersion)return {ok:false,message:"The draft changed. Reload before rewriting."};
+  const {data:snapshot,error:snapshotError}=await supabase.from("analysis_snapshots").select("structured_output").eq("id",draft.source_snapshot_id).maybeSingle();
+  if(snapshotError||!snapshot)return {ok:false,message:"The supporting analysis is unavailable."};
+  try{
+    const gateway=new VercelAiGateway();
+    const result=await gateway.run({worker:"reply_rewrite",schema:replyRewriteOutput,system:"Rewrite one creator-controlled commercial email. Never invent facts, figures, leverage, deadlines, or agreement. Return only the rewritten body and a short change list. Preserve the current wording, creator edits, facts, and negotiation strategy unless start_again is true. Do not change the subject.",prompt:JSON.stringify({instruction:value.instruction,start_again:value.startAgain,current_body:draft.body,analysis:snapshot.structured_output}),userId,maxOutputTokens:1200});
+    const {data:version,error}=await supabase.rpc("apply_reply_rewrite",{p_deal_id:value.dealId,p_body:result.output.body,p_expected_version:value.expectedVersion,p_instruction:value.instruction,p_start_again:value.startAgain});
+    if(error||typeof version!=="number")return {ok:false,message:"The draft changed before the rewrite could be saved."};
+    revalidatePath(`/deals/${value.dealId}`);return {ok:true,body:result.output.body,version};
+  }catch{return {ok:false,message:"Replio could not rewrite this draft. Your current wording is unchanged."};}
 }
