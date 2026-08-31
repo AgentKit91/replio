@@ -99,7 +99,8 @@ M5 — Pricing, Score, strategy and reply/send
 - [x] Creator-owned goals, non-negotiables, preferences, private rate cards and private voice-version schema.
 - [x] Learned preferences remain pending suggestions until an explicit creator acceptance action.
 - [x] Private outcome and de-identified benchmark contribution structures exclude creator, workspace, contact, message, Deal and raw-text identifiers.
-- [ ] Completed-Deal recap workflow, contribution aggregation, contextual profile UI and personal Insights.
+- [x] Atomic, idempotent completed-Deal outcome transaction calculates versioned EAE and emits exactly one unlinkable contribution.
+- [ ] Completed-Deal recap UI, contribution aggregation, contextual profile UI and personal Insights.
 
 ## Tests last run
 
