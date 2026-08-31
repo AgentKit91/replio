@@ -139,6 +139,7 @@ M6 — Creator learning, insights and benchmark foundation
 - PR #10 merged as `4a9583d`; Production deployment `dpl_7A2byt9wL6nLK2ERVoaoJ9xPE4ss` is READY with the low-cost AI model configuration.
 - M5 score/composer and Gmail-send foundations merged in PRs #12–#14; the send queue remains empty and no production email has been sent.
 - PR #15 remediated every Supabase-advised missing foreign-key index; hosted performance advisor reports zero unindexed foreign keys.
+- PR #21 completed M6 threshold aggregation and personal trends; the hosted database has no benchmark contributions or cells and its nightly refresh is active but inert until real outcomes exist.
 
 ## Known blockers
 
