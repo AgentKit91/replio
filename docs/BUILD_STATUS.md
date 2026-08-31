@@ -112,8 +112,11 @@ M7 — Stripe subscriptions
 - [x] Configuration-driven provisional Standard/Pro catalogue with hidden Ultra architecture slot.
 - [x] Server-authoritative subscription projection, period usage counters and private idempotent Stripe-event ledger.
 - [x] Analysis entitlement is consumed atomically at the database queue boundary; redirects and browser calls cannot grant access.
-- [ ] Stripe test Products/Prices, Checkout, Customer Portal and signed webhook projection.
-- [ ] Failed-payment Settings UX and full Stripe test journeys.
+- [x] Pinned current Stripe Node SDK, test-mode Checkout and Customer Portal server actions, and raw-body signed webhook projection.
+- [x] Idempotent and out-of-order Stripe subscription event tests; successful redirects remain non-authoritative.
+- [x] Stripe test Products/Prices and signed webhook endpoint configuration.
+- [x] Failed-payment and processing-state Settings UX.
+- [ ] Full Stripe test Checkout, trial, webhook and Customer Portal journey.
 
 ## Tests last run
 
@@ -148,6 +151,7 @@ M7 — Stripe subscriptions
 - M5 score/composer and Gmail-send foundations merged in PRs #12–#14; the send queue remains empty and no production email has been sent.
 - PR #15 remediated every Supabase-advised missing foreign-key index; hosted performance advisor reports zero unindexed foreign keys.
 - PR #21 completed M6 threshold aggregation and personal trends; the hosted database has no benchmark contributions or cells and its nightly refresh is active but inert until real outcomes exist.
+- PR #24 added test-mode Checkout, Customer Portal, signed webhooks and the idempotent subscription projection; Stripe test Products/Prices and the test webhook are now configured with restricted server credentials stored only as Vercel Production secrets.
 
 ## Known blockers
 
@@ -159,8 +163,8 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Merge, deploy and apply the M6 threshold aggregation migration, then verify hosted advisors.
-2. Begin M7 subscription/entitlement foundations without activating paid billing.
+1. Deploy the Stripe test catalogue mapping, apply the three M7 migrations, and verify hosted advisors.
+2. Exercise the full Stripe test Checkout, 30-day trial, webhook projection and Customer Portal journey.
 3. Exercise the M5 loop only after exact consent to transmit the selected fixture to AI and send a real Gmail reply.
 
 ## Decision log
