@@ -75,3 +75,12 @@ export async function rewriteReply(input:z.infer<typeof rewriteSchema>):Promise<
     revalidatePath(`/deals/${value.dealId}`);return {ok:true,body:result.output.body,version};
   }catch{return {ok:false,message:"Replio could not rewrite this draft. Your current wording is unchanged."};}
 }
+
+const moneySchema=z.string().trim().regex(/^\d+(?:\.\d{1,2})?$/).transform((value)=>{const [whole,fraction=""]=value.split(".");return BigInt(whole)*BigInt(100)+BigInt(fraction.padEnd(2,"0"));}).refine((value)=>value<=BigInt(Number.MAX_SAFE_INTEGER));
+export async function completeDealOutcome(formData:FormData){
+  const dealId=idSchema.parse(formData.get("dealId"));const outcome=z.enum(["success","lost","declined"]).parse(formData.get("outcome"));const finalAmount=moneySchema.parse(formData.get("finalAmount"));const rounds=z.coerce.number().int().min(0).max(100).parse(formData.get("rounds"));
+  const improvements=z.string().max(5000).parse(formData.get("improvements")??"").split("\n").map((item)=>item.trim()).filter(Boolean).slice(0,30);
+  const learning=z.string().trim().max(5000).parse(formData.get("learning")??"");const {supabase}=await requireUser();
+  const {error}=await supabase.rpc("complete_deal_outcome",{p_deal_id:dealId,p_outcome:outcome,p_final_amount_minor:Number(finalAmount),p_negotiation_rounds:rounds,p_major_term_improvements:improvements,p_contextual_learning:learning?{creator_note:learning}:{}});
+  if(error)throw new Error("Unable to complete this Deal.");revalidatePath(`/deals/${dealId}`);revalidatePath("/deals");revalidatePath("/insights");revalidatePath("/dashboard");
+}

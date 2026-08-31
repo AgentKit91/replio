@@ -100,7 +100,9 @@ M5 — Pricing, Score, strategy and reply/send
 - [x] Learned preferences remain pending suggestions until an explicit creator acceptance action.
 - [x] Private outcome and de-identified benchmark contribution structures exclude creator, workspace, contact, message, Deal and raw-text identifiers.
 - [x] Atomic, idempotent completed-Deal outcome transaction calculates versioned EAE and emits exactly one unlinkable contribution.
-- [ ] Completed-Deal recap UI, contribution aggregation, contextual profile UI and personal Insights.
+- [x] Creator-facing completed-Deal recap with clear private/aggregate-data disclosure and reproducible `How we estimated this` explanation.
+- [x] Private personal Insights totals remain separated by currency until a versioned FX source exists.
+- [ ] Contribution aggregation and contextual Train Replio profile UI.
 
 ## Tests last run
 

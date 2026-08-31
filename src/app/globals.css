@@ -114,6 +114,13 @@ button, input, select, textarea { font: inherit; }
 .fact-list li { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .6rem; border-bottom: 1px solid var(--line); }
 .fact-list span { text-transform: capitalize; color: var(--muted); }
 .note-form { display: grid; gap: .65rem; }
+.outcome-form { display:grid;gap:.8rem; }
+.outcome-form label { display:grid;gap:.35rem;font-weight:650; }
+.outcome-form input,.outcome-form select,.outcome-form textarea { border:1px solid var(--line);border-radius:var(--radius-sm);padding:.75rem;background:var(--surface); }
+.outcome-form textarea { min-height:5rem;resize:vertical; }
+.outcome-form .button { justify-self:start; }
+.insight-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem;margin-top:2rem; }
+.insight-grid h2 { margin:.5rem 0;font-size:2rem; }
 .note-form textarea { min-height: 6rem; resize: vertical; }
 .note-form .button { justify-self: start; }
 .note { margin-top: 1rem; padding-top: .85rem; border-top: 1px solid var(--line); }
