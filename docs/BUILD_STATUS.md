@@ -92,13 +92,22 @@ M5 — Pricing, Score, strategy and reply/send
 - [x] Successful sends appear immediately and move the Deal to Waiting on brand; later inbound replies move it to Your reply needed.
 - [ ] Consent-gated production E2E: labelled email → analysis → edit/rewrite → send → brand reply.
 
+### M6 — Creator learning, insights and benchmark foundation (in progress)
+
+- [x] Conservative, versioned Estimated Additional Earnings calculator with negative-uplift and zero-base safeguards.
+- [x] Versioned benchmark evidence gate with no seeded/fake intelligence.
+- [x] Creator-owned goals, non-negotiables, preferences, private rate cards and private voice-version schema.
+- [x] Learned preferences remain pending suggestions until an explicit creator acceptance action.
+- [x] Private outcome and de-identified benchmark contribution structures exclude creator, workspace, contact, message, Deal and raw-text identifiers.
+- [ ] Completed-Deal recap workflow, contribution aggregation, contextual profile UI and personal Insights.
+
 ## Tests last run
 
 31 Aug 2026:
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
-- `pnpm test` — pass (29 tests across 11 files).
+- `pnpm test` — pass (35 tests across 13 files).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
 - GitHub Actions `app` job — pass.
 - GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
@@ -135,9 +144,9 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Merge and apply intentional rewrite, respectful-challenge and Deal lifecycle completion.
-2. Exercise the M5 loop only after exact consent to transmit the selected fixture to AI and send a real Gmail reply.
-3. Begin M6 creator-owned goals, non-negotiables, rate cards and learning structures after M5 exit verification.
+1. Merge and apply the M6 creator-learning and privacy-safe benchmark schema foundation.
+2. Build the completed-Deal recap/contribution transaction and personal Insights UI.
+3. Exercise the M5 loop only after exact consent to transmit the selected fixture to AI and send a real Gmail reply.
 
 ## Decision log
 
