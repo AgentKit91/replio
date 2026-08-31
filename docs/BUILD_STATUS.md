@@ -152,6 +152,7 @@ M7 — Stripe subscriptions
 - PR #15 remediated every Supabase-advised missing foreign-key index; hosted performance advisor reports zero unindexed foreign keys.
 - PR #21 completed M6 threshold aggregation and personal trends; the hosted database has no benchmark contributions or cells and its nightly refresh is active but inert until real outcomes exist.
 - PR #24 added test-mode Checkout, Customer Portal, signed webhooks and the idempotent subscription projection; Stripe test Products/Prices and the test webhook are now configured with restricted server credentials stored only as Vercel Production secrets.
+- Stripe Managed Payments is explicitly disabled for the test Checkout because tax registrations and product tax classification are not yet approved; Stripe Tax remains off rather than silently collecting nothing.
 
 ## Known blockers
 
