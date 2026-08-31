@@ -1,0 +1,5 @@
+import "server-only";
+
+async function gmailJson<T>(url:string,accessToken:string,init:RequestInit={method:"GET"}){const response=await fetch(url,{...init,headers:{authorization:`Bearer ${accessToken}`,...(init.body?{"content-type":"application/json"}:{}),...init.headers},cache:"no-store"});if(!response.ok)throw new Error(`Gmail send API failed (${response.status})`);return response.json() as Promise<T>;}
+export async function findSentMessage(accessToken:string,messageId:string){const url=new URL("https://gmail.googleapis.com/gmail/v1/users/me/messages");url.searchParams.set("q",`rfc822msgid:${messageId}`);url.searchParams.set("maxResults","1");const result=await gmailJson<{messages?:Array<{id:string;threadId:string}>}>(url.toString(),accessToken);return result.messages?.[0]??null;}
+export async function sendGmailReply(accessToken:string,message:{raw:string;threadId:string}){return gmailJson<{id:string;threadId:string}>("https://gmail.googleapis.com/gmail/v1/users/me/messages/send",accessToken,{method:"POST",body:JSON.stringify(message)});}
