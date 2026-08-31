@@ -1,10 +1,10 @@
 # Replio Build Status
 
-**Overall:** M0–M3 COMPLETE; M4 IN PROGRESS
+**Overall:** M0–M4 COMPLETE; M5 IN PROGRESS
 
 ## Current milestone
 
-M4 — AI pipeline
+M5 — Pricing, Score, strategy and reply/send
 
 ## Completed
 
@@ -75,23 +75,24 @@ M4 — AI pipeline
 
 ### M4 — AI pipeline
 
-- [ ] Provider/gateway adapter and five fixed typed workers.
-- [ ] Immutable analysis snapshots, facts/evidence and worker cost ledger.
-- [ ] Durable AI analysis queue with retry/fallback and progressive updates.
-- [ ] Versioned Knowledge Library structure and non-production fixture corpus.
+- [x] Provider-neutral Vercel AI Gateway adapter and five fixed Zod-validated workers.
+- [x] Immutable analysis snapshots, evidence-backed fact ledger and per-worker usage/cost records.
+- [x] Durable AI queue, idempotent worker-level resume, three-attempt cap, optional fallback and progressive workspace updates.
+- [x] Versioned, trust-tiered Knowledge Library structure with an explicitly non-production synthetic fixture corpus.
+- [x] Fabrication/structure/error-handling eval fixtures; provider failure leaves the Deal and conversation usable.
 
 ## Tests last run
 
-30 Aug 2026:
+31 Aug 2026:
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
-- `pnpm test` — pass (7 tests).
+- `pnpm test` — pass (24 tests across 9 files).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
 - GitHub Actions `app` job — pass.
-- GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M3 tenant-isolation assertions).
-- PR #7 and data-quality follow-up PR #8 — app, database and Vercel checks pass.
-- Production read-through — real Deal list, split workspace, message thread and Brands route render successfully.
+- GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
+- PRs #9 and #10 — app, database and Vercel checks pass.
+- Production read-through — Deal Workspace renders and the AI activation control is enabled; it was not clicked, so no real email was sent to an AI provider during verification.
 - Hosted pgTAP Gmail idempotency transaction — pass (6 assertions; rolled back).
 
 ## Migrations/deployments
@@ -108,6 +109,8 @@ M4 — AI pipeline
 - Production deployment `a3e600c` is READY; webhook, queue and worker completed the first labelled-thread sync end to end.
 - M3 migrations applied to hosted Supabase; one active fixture Deal remains intact, brand/contact inference is intentionally skipped for consumer email domains, and the daily expired-deal purge is scheduled.
 - PR #7 merged and production deployment `68dae27` reached READY; PR #8 merged the consumer-domain data-quality correction.
+- M4 pipeline and retry-cap migrations are applied to hosted Supabase; the AI queue remains empty until a creator explicitly requests analysis.
+- PR #10 merged as `4a9583d`; Production deployment `dpl_7A2byt9wL6nLK2ERVoaoJ9xPE4ss` is READY with the low-cost AI model configuration.
 
 ## Known blockers
 
@@ -119,9 +122,9 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Define the M4 immutable analysis, evidence, knowledge-version and worker-run schema with tenant-isolation tests.
-2. Add a provider-neutral gateway and five fixed Zod-validated worker contracts with fixture-only tests.
-3. Add the durable `ai_analysis` queue and progressive Deal Workspace analysis states without blocking conversation access.
+1. Add versioned Score and pricing configuration with provisional fixture calibration.
+2. Build evidence navigation plus the integrated autosaving, versioned reply composer.
+3. Add idempotent Gmail threading/send and state transitions, then exercise the loop with explicit transmission consent.
 
 ## Decision log
 
