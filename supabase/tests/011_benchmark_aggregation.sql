@@ -1,6 +1,6 @@
 begin;
 set search_path=public,extensions;
-select plan(12);
+select plan(13);
 
 select is(has_function_privilege('authenticated','private.refresh_benchmark_cells()','execute'),false,'creators cannot run internal aggregation');
 
