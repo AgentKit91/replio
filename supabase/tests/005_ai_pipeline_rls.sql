@@ -1,6 +1,7 @@
 begin; set search_path=public,extensions; select plan(12);
 insert into auth.users(id,email) values('00000000-0000-4000-8000-000000000051','ai-one@example.test'),('00000000-0000-4000-8000-000000000052','ai-two@example.test');
-insert into public.deals(workspace_id,title) select workspace_id,'AI fixture deal' from public.workspace_members where user_id='00000000-0000-4000-8000-000000000051' returning id as deal_id \gset
+insert into public.deals(workspace_id,title) select workspace_id,'AI fixture deal' from public.workspace_members where user_id='00000000-0000-4000-8000-000000000051' returning id as deal_id,workspace_id \gset
+insert into public.subscriptions(workspace_id,plan_key,status,current_period_starts_at,current_period_ends_at) values(:'workspace_id','standard','active',now(),now()+interval '1 month');
 set local role authenticated; set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000051","role":"authenticated"}';
 select isnt(public.request_deal_analysis(:'deal_id'),null::uuid,'member can request analysis');
 select is((select count(*)::int from public.analysis_snapshots),1,'member sees own queued snapshot');

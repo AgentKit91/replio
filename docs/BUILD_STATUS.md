@@ -1,10 +1,10 @@
 # Replio Build Status
 
-**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6 implementation complete
+**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6 COMPLETE; M7 IN PROGRESS
 
 ## Current milestone
 
-M6 — Creator learning, insights and benchmark foundation
+M7 — Stripe subscriptions
 
 ## Completed
 
@@ -106,6 +106,14 @@ M6 — Creator learning, insights and benchmark foundation
 - [x] Nightly low-cost benchmark aggregation publishes only coarse cells meeting the versioned minimum evidence threshold and removes cells that fall below it.
 - [x] Richer private personal trends calculate success rate and median negotiation rounds without combining currencies.
 - [x] Re-identification and threshold regression tests prove public cells exclude linkable identifiers and cannot survive with fewer than five contributions.
+
+### M7 — Stripe subscriptions (in progress)
+
+- [x] Configuration-driven provisional Standard/Pro catalogue with hidden Ultra architecture slot.
+- [x] Server-authoritative subscription projection, period usage counters and private idempotent Stripe-event ledger.
+- [x] Analysis entitlement is consumed atomically at the database queue boundary; redirects and browser calls cannot grant access.
+- [ ] Stripe test Products/Prices, Checkout, Customer Portal and signed webhook projection.
+- [ ] Failed-payment Settings UX and full Stripe test journeys.
 
 ## Tests last run
 
