@@ -13,6 +13,8 @@ const serverSchema = z.object({
   GMAIL_TOKEN_ENCRYPTION_KEY: z.string().min(1).optional(),
   GMAIL_TOKEN_ENCRYPTION_KEY_VERSION: z.string().min(1).default("v1"),
   INTERNAL_JOB_SECRET: z.string().min(24).optional(),
+  STRIPE_SECRET_KEY: z.string().regex(/^(rk|sk)_test_/).optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
   AI_GATEWAY_MODEL: z.string().regex(/^[a-z0-9-]+\/[a-z0-9.-]+$/).optional(),
   AI_GATEWAY_FALLBACK_MODEL: z.string().regex(/^[a-z0-9-]+\/[a-z0-9.-]+$/).optional(),
   AI_INPUT_COST_MICRO_PER_MILLION: z.coerce.number().nonnegative().optional(),
@@ -31,6 +33,8 @@ export const serverEnv = serverSchema.parse({
   GMAIL_TOKEN_ENCRYPTION_KEY: process.env.GMAIL_TOKEN_ENCRYPTION_KEY || undefined,
   GMAIL_TOKEN_ENCRYPTION_KEY_VERSION: process.env.GMAIL_TOKEN_ENCRYPTION_KEY_VERSION,
   INTERNAL_JOB_SECRET: process.env.INTERNAL_JOB_SECRET || undefined,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || undefined,
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || undefined,
   AI_GATEWAY_MODEL: process.env.AI_GATEWAY_MODEL || undefined,
   AI_GATEWAY_FALLBACK_MODEL: process.env.AI_GATEWAY_FALLBACK_MODEL || undefined,
   AI_INPUT_COST_MICRO_PER_MILLION: process.env.AI_INPUT_COST_MICRO_PER_MILLION || undefined,
@@ -47,4 +51,8 @@ export function requireGmailServerEnv() {
     GMAIL_TOKEN_ENCRYPTION_KEY: true,
   });
   return required.parse(serverEnv);
+}
+
+export function requireStripeServerEnv(){
+  return serverSchema.required({STRIPE_SECRET_KEY:true,STRIPE_WEBHOOK_SECRET:true}).parse(serverEnv);
 }

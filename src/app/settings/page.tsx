@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AppShell } from "@/components/replio/AppShell";
 import { requireUser } from "@/features/auth/require-user";
+import {openBillingPortal,startCheckout} from "./billing-actions";
 
 const notices: Record<string, string> = {
   connected: "Gmail is connected. Your Replio label is ready.",
@@ -9,10 +10,15 @@ const notices: Record<string, string> = {
   workspace_missing: "Your creator workspace is not ready yet.",
 };
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ gmail?: string }> }) {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ gmail?: string;billing?:string }> }) {
   const { supabase, userId } = await requireUser();
-  const { data: connection } = await supabase.from("integration_connections").select("state, connected_identity, last_successful_sync_at, error_message").eq("user_id", userId).eq("provider", "gmail").maybeSingle();
-  const { gmail } = await searchParams;
+  const [{data:connection},{data:subscription},{data:plans},{data:usage}]=await Promise.all([
+    supabase.from("integration_connections").select("state, connected_identity, last_successful_sync_at, error_message").eq("user_id", userId).eq("provider", "gmail").maybeSingle(),
+    supabase.from("subscriptions").select("plan_key,status,trial_ends_at,current_period_ends_at,cancel_at_period_end").maybeSingle(),
+    supabase.from("plan_catalog").select("plan_key,display_name,monthly_price_minor,currency,trial_days").order("monthly_price_minor"),
+    supabase.from("usage_counters").select("value,period_end").eq("metric","analysed_deals").order("period_start",{ascending:false}).limit(1).maybeSingle()
+  ]);
+  const { gmail,billing } = await searchParams;
   const connected = connection?.state === "active";
   return <AppShell>
     <header className="page-header"><div><p className="eyebrow">Replio</p><h1>Settings</h1></div></header>
@@ -28,6 +34,13 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <Link className="button button-primary" href="/api/integrations/gmail/connect">Connect Gmail</Link>
         <p className="privacy-note">Google will ask for permission to read, label, compose and send email. Replio processes only threads you label Replio.</p>
       </>}
+    </section>
+    <section className="content-block settings-card" aria-labelledby="billing-heading">
+      <div><p className="eyebrow">Subscription</p><h2 id="billing-heading">Billing</h2></div>
+      {billing==="processing"&&<p className="notice notice-success" role="status">Checkout finished. Access updates only after Stripe confirms the subscription.</p>}
+      {billing==="canceled"&&<p className="notice" role="status">Checkout was canceled. Nothing was charged.</p>}
+      {subscription?<><p><strong>{subscription.plan_key}</strong> · {subscription.status.replaceAll("_"," ")}</p>{subscription.status==="past_due"||subscription.status==="unpaid"?<p className="notice notice-error">Payment needs attention. Open Stripe billing to update the payment method.</p>:null}<p className="muted">{usage?`${usage.value} analysed Deals used in the current period.`:"No analysed Deals counted in this period."} {subscription.cancel_at_period_end?"Cancellation is scheduled at period end.":""}</p><form action={openBillingPortal}><button className="button button-secondary">Manage billing in Stripe</button></form></>:<><p className="muted">Start with a 30-day test-mode trial. Stripe—not this return page—confirms access.</p><div className="insight-grid">{plans?.map(plan=><article className="workspace-card" key={plan.plan_key}><h3>{plan.display_name}</h3><p>{new Intl.NumberFormat("en-GB",{style:"currency",currency:plan.currency}).format(plan.monthly_price_minor/100)} / month after {plan.trial_days} days</p><form action={startCheckout}><input type="hidden" name="planKey" value={plan.plan_key}/><button className="button button-primary">Start test trial</button></form></article>)}</div></>}
+      <p className="privacy-note">Prices are provisional test configuration. Tax collection is not enabled until registrations and launch markets are approved.</p>
     </section>
   </AppShell>;
 }
