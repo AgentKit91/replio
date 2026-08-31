@@ -53,3 +53,7 @@ export async function saveReplyDraft(input:z.infer<typeof saveReplySchema>):Prom
   const {data,error}=await supabase.rpc("save_reply_draft",{p_deal_id:value.dealId,p_subject:value.subject,p_body:value.body,p_expected_version:value.expectedVersion});
   if(error||typeof data!=="number") return {ok:false}; revalidatePath(`/deals/${value.dealId}`); return {ok:true,version:data};
 }
+const queueReplySchema=z.object({dealId:z.uuid(),expectedVersion:z.number().int().positive()});
+export async function queueReplySend(input:z.infer<typeof queueReplySchema>):Promise<{ok:boolean}> {
+  const value=queueReplySchema.parse(input);const {supabase}=await requireUser();const {error}=await supabase.rpc("request_reply_send",{p_deal_id:value.dealId,p_expected_version:value.expectedVersion});if(error)return {ok:false};revalidatePath(`/deals/${value.dealId}`);return {ok:true};
+}
