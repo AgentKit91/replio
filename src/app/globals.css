@@ -121,6 +121,7 @@ button, input, select, textarea { font: inherit; }
 .outcome-form .button { justify-self:start; }
 .insight-grid { display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem;margin-top:2rem; }
 .insight-grid h2 { margin:.5rem 0;font-size:2rem; }
+.training-grid { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:2rem;align-items:start; }
 .note-form textarea { min-height: 6rem; resize: vertical; }
 .note-form .button { justify-self: start; }
 .note { margin-top: 1rem; padding-top: .85rem; border-top: 1px solid var(--line); }
@@ -161,5 +162,6 @@ button, input, select, textarea { font: inherit; }
   .state-form { align-items: stretch; flex-direction: column; }
   .detail-grid { grid-template-columns: 1fr; }
   .recommendation-grid { grid-template-columns:1fr; }
+  .training-grid { grid-template-columns:1fr; }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; } }

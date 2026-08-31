@@ -102,7 +102,8 @@ M5 — Pricing, Score, strategy and reply/send
 - [x] Atomic, idempotent completed-Deal outcome transaction calculates versioned EAE and emits exactly one unlinkable contribution.
 - [x] Creator-facing completed-Deal recap with clear private/aggregate-data disclosure and reproducible `How we estimated this` explanation.
 - [x] Private personal Insights totals remain separated by currency until a versioned FX source exists.
-- [ ] Contribution aggregation and contextual Train Replio profile UI.
+- [x] Contextual Train Replio UI for creator-owned goals, red lines and private rate cards; observed suggestions require explicit acceptance.
+- [ ] Minimum-threshold contribution aggregation and richer personal trend calculations.
 
 ## Tests last run
 
