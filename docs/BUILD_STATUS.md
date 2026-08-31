@@ -1,10 +1,10 @@
 # Replio Build Status
 
-**Overall:** M0–M4 COMPLETE; M5 IN PROGRESS
+**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6 implementation complete
 
 ## Current milestone
 
-M5 — Pricing, Score, strategy and reply/send
+M6 — Creator learning, insights and benchmark foundation
 
 ## Completed
 
@@ -92,7 +92,7 @@ M5 — Pricing, Score, strategy and reply/send
 - [x] Successful sends appear immediately and move the Deal to Waiting on brand; later inbound replies move it to Your reply needed.
 - [ ] Consent-gated production E2E: labelled email → analysis → edit/rewrite → send → brand reply.
 
-### M6 — Creator learning, insights and benchmark foundation (in progress)
+### M6 — Creator learning, insights and benchmark foundation (implementation complete)
 
 - [x] Conservative, versioned Estimated Additional Earnings calculator with negative-uplift and zero-base safeguards.
 - [x] Versioned benchmark evidence gate with no seeded/fake intelligence.
@@ -103,7 +103,9 @@ M5 — Pricing, Score, strategy and reply/send
 - [x] Creator-facing completed-Deal recap with clear private/aggregate-data disclosure and reproducible `How we estimated this` explanation.
 - [x] Private personal Insights totals remain separated by currency until a versioned FX source exists.
 - [x] Contextual Train Replio UI for creator-owned goals, red lines and private rate cards; observed suggestions require explicit acceptance.
-- [ ] Minimum-threshold contribution aggregation and richer personal trend calculations.
+- [x] Nightly low-cost benchmark aggregation publishes only coarse cells meeting the versioned minimum evidence threshold and removes cells that fall below it.
+- [x] Richer private personal trends calculate success rate and median negotiation rounds without combining currencies.
+- [x] Re-identification and threshold regression tests prove public cells exclude linkable identifiers and cannot survive with fewer than five contributions.
 
 ## Tests last run
 
@@ -111,7 +113,7 @@ M5 — Pricing, Score, strategy and reply/send
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
-- `pnpm test` — pass (35 tests across 13 files).
+- `pnpm test` — pass (37 tests across 14 files).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
 - GitHub Actions `app` job — pass.
 - GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
@@ -148,8 +150,8 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Merge and apply the M6 creator-learning and privacy-safe benchmark schema foundation.
-2. Build the completed-Deal recap/contribution transaction and personal Insights UI.
+1. Merge, deploy and apply the M6 threshold aggregation migration, then verify hosted advisors.
+2. Begin M7 subscription/entitlement foundations without activating paid billing.
 3. Exercise the M5 loop only after exact consent to transmit the selected fixture to AI and send a real Gmail reply.
 
 ## Decision log
