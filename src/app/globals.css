@@ -58,6 +58,7 @@ button, input, select, textarea { font: inherit; }
 .settings-card { display: grid; gap: 1rem; }
 .settings-card h2 { font-size: 1.65rem; letter-spacing: -.035em; }
 .settings-card .button { width: fit-content; }
+.support-grant-form,.support-grant-form label { display:grid;gap:.45rem; }.support-grant-form { max-width:36rem;gap:1rem; }.support-grant-form textarea,.support-grant-form select { width:100%;padding:.7rem;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--canvas);font:inherit; }.support-grant-form textarea { min-height:6rem;resize:vertical; }.support-grant-form .check-row { display:flex;align-items:flex-start; }.support-grant-list { display:grid;gap:.75rem; }.support-grant-list article { display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem;border:1px solid var(--line);border-radius:var(--radius-sm); }.support-grant-list p,.support-grant-list small { margin:.25rem 0 0;color:var(--muted); }
 .connection-status { color: var(--success); font-weight: 650; }
 .rewrite-controls, .challenge { margin-top: 1rem; padding: 1rem; border: 1px solid var(--line); border-radius: .8rem; background: var(--canvas); }
 .rewrite-controls { display: grid; gap: .7rem; }
