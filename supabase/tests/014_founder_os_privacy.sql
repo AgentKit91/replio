@@ -1,4 +1,4 @@
-begin;set search_path=public,extensions;select plan(28);
+begin;set search_path=public,extensions;select plan(38);
 insert into auth.users(id,email) values
  ('00000000-0000-4000-8000-000000000141','support-owner@example.test'),
  ('00000000-0000-4000-8000-000000000142','other-owner@example.test'),
@@ -49,5 +49,25 @@ select isnt(public.founder_start_support_session('00000000-0000-4000-8000-000000
 select is(jsonb_array_length(public.founder_support_grants('00000000-0000-4000-8000-000000000143')),1,'active grant appears in founder support queue');
 select ok((public.founder_support_grants('00000000-0000-4000-8000-000000000143')->0->>'sessionId') is not null,'active session is visible without private content');
 select ok(public.founder_end_support_session('00000000-0000-4000-8000-000000000143',(public.founder_support_grants('00000000-0000-4000-8000-000000000143')->0->>'sessionId')::uuid,'test-end-support-session'),'founder can immediately end own session');
+reset role;
+insert into public.integration_connections(workspace_id,user_id,provider,state,connected_identity) values(:'owner_workspace_id','00000000-0000-4000-8000-000000000141','gmail','active','support-owner@example.test') returning id \gset integration_
+insert into public.gmail_connections(integration_connection_id,workspace_id,gmail_email_address,replio_label_id,last_history_id,watch_expiration,watch_status,token_encryption_key_version) values(:'integration_id',:'owner_workspace_id','support-owner@example.test','Label_Test',100,now()+interval '1 day','active','v1') returning id \gset gmail_
+insert into private.gmail_sync_events(gmail_connection_id,pubsub_message_id,history_id,status,attempt_count,last_error) values(:'gmail_id','recovery-test',101,'failed',2,'TemporaryNetworkError') returning id \gset sync_
+select pgmq.send('gmail_sync',jsonb_build_object('event_id',:'sync_id','gmail_connection_id',:'gmail_id','history_id',101));
+insert into private.system_incidents(component,severity,title,summary) values('gmail','warning','Synthetic incident','No private content') returning id \gset incident_
+set local role service_role;set local request.jwt.claims='{"role":"service_role"}';
+select is(has_function_privilege('authenticated','public.founder_retry_gmail_sync(uuid,uuid,text)','execute'),false,'browser clients cannot retry Gmail syncs');
+select is(has_function_privilege('authenticated','public.founder_acknowledge_incident(uuid,uuid,text)','execute'),false,'browser clients cannot acknowledge incidents');
+select is(jsonb_array_length(public.founder_recovery_actions('00000000-0000-4000-8000-000000000143')->'gmailSyncs'),1,'recovery model exposes one privacy-safe failed Gmail sync');
+select ok(public.founder_retry_gmail_sync('00000000-0000-4000-8000-000000000143',:'sync_id','test-retry-gmail-sync'),'eligible labelled Gmail sync can be retried');
+reset role;
+select is((select status from private.gmail_sync_events where id=:'sync_id'),'queued','retry returns event to queued state');
+select is((select count(*) from private.founder_actions where idempotency_key='test-retry-gmail-sync'),1::bigint,'Gmail retry is audited once');
+set local role service_role;set local request.jwt.claims='{"role":"service_role"}';
+select ok(public.founder_retry_gmail_sync('00000000-0000-4000-8000-000000000143',:'sync_id','test-retry-gmail-sync'),'Gmail retry replay is idempotent');
+select ok(public.founder_acknowledge_incident('00000000-0000-4000-8000-000000000143',:'incident_id','test-acknowledge-incident'),'open incident can be acknowledged');
+reset role;
+select is((select status from private.system_incidents where id=:'incident_id'),'acknowledged','incident status is acknowledged');
+select is((select count(*) from private.founder_actions where idempotency_key='test-acknowledge-incident'),1::bigint,'incident acknowledgement is audited');
 select * from finish();rollback;
 

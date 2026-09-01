@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { loadFounderDashboard } from "@/features/founder/dashboard";
-import { endSupportSession,setWorkerControl,startSupportSession } from "./actions";
+import { acknowledgeIncident,endSupportSession,retryGmailSync,setWorkerControl,startSupportSession } from "./actions";
 
 export default async function FounderPage() {
   const dashboard = await loadFounderDashboard();
@@ -16,6 +16,12 @@ export default async function FounderPage() {
     </section>
     <section className="founder-action-centre"><div className="section-heading"><div><p className="eyebrow">Action Centre</p><h2>What needs attention</h2></div><span className="status-pill">{dashboard.actionItems.length} open</span></div>
       {dashboard.actionItems.length ? <ol>{dashboard.actionItems.map((item) => <li key={item.id} className={`founder-action founder-action-${item.severity}`}><div><strong>{item.title}</strong><p>{item.context}</p></div><p><span>Safest next step</span>{item.nextStep}</p></li>)}</ol> : <div className="founder-empty"><strong>No critical action right now.</strong><p className="muted">Queues, Gmail watches, billing state and recorded incidents are clear.</p></div>}
+    </section>
+    <section className="founder-controls"><div className="section-heading"><div><p className="eyebrow">Recovery</p><h2>Safe operational actions</h2></div><span className="status-pill">Audited · idempotent</span></div>
+      {dashboard.recoveryActions.gmailSyncs.length===0&&dashboard.recoveryActions.incidents.length===0?<div className="founder-empty"><strong>No safe recovery action is waiting.</strong><p className="muted">AI and outbound-send failures remain blocked from generic retry because they require creator consent or provider reconciliation.</p></div>:<div className="founder-control-list">
+        {dashboard.recoveryActions.gmailSyncs.map(item=><article key={item.eventId}><div><strong>Labelled Gmail sync · {item.gmailAddress}</strong><p>{item.errorClass??"Unknown safe error class"}</p><small>{item.attemptCount} attempts · no message content exposed</small></div><div>{item.eligible?<form action={retryGmailSync}><input type="hidden" name="eventId" value={item.eventId}/><input type="hidden" name="idempotencyKey" value={crypto.randomUUID()}/><button className="button button-secondary">Retry now</button></form>:<><span className="status-pill">Blocked</span><small>{item.blockedReason}</small></>}</div></article>)}
+        {dashboard.recoveryActions.incidents.map(item=><article key={item.id}><div><strong>{item.title}</strong><p>{item.summary}</p><small>{item.recommendedAction??"Review component health before recovery."}</small></div><form action={acknowledgeIncident}><input type="hidden" name="incidentId" value={item.id}/><input type="hidden" name="idempotencyKey" value={crypto.randomUUID()}/><button className="button button-secondary">Acknowledge</button></form></article>)}
+      </div>}
     </section>
     <section className="founder-controls"><div className="section-heading"><div><p className="eyebrow">Company controls</p><h2>Worker kill switches</h2></div><span className="status-pill">Versioned · audited</span></div>
       <p className="muted">Pausing is immediate and leaves queued work untouched. Resuming may restart private-data processing or outbound delivery, so it requires explicit confirmation.</p>
