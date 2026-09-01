@@ -24,6 +24,13 @@ export type FounderDashboard = {
   aiCostUsd: number | null;
   openSupportGrants: number;
   actionItems: FounderActionItem[];
+  customers: FounderCustomer[];
+};
+
+export type FounderCustomer = {
+  userId: string; email: string; name: string; signedUpAt: string; lastActivityAt: string | null;
+  plan: string | null; subscriptionStatus: string | null; gmailStatus: string | null; gmailWatchExpiresAt: string | null;
+  analysedDeals: number; failedJobs: number; supportGrantActive: boolean;
 };
 
 type Snapshot = Omit<FounderDashboard, "actionItems"> & { incidents: FounderActionItem[] };
