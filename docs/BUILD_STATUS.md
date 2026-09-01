@@ -118,6 +118,14 @@ M8 — Founder OS
 - [x] Failed-payment and processing-state Settings UX.
 - [x] Full Stripe test Checkout, 30-day trial, signed webhook projection and Customer Portal journey.
 
+### M8 — Founder OS (in progress)
+
+- [x] Founder-only role bootstrap and server-side operational read boundary.
+- [x] Privacy-shielded Today / Action Centre for billing, Gmail, AI/send queues, recorded AI cost and active support grants.
+- [x] Founder health, incident, audited-action and versioned feature-flag foundations.
+- [x] Creator-controlled support grants are scoped, expire within seven days, revoke immediately and do not grant access without an active audited founder session.
+- [ ] Safe retry/reconcile actions, customer operational directory and versioned company controls.
+
 ## Tests last run
 
 31 Aug 2026:
@@ -155,6 +163,7 @@ M8 — Founder OS
 - Stripe Managed Payments is explicitly disabled for the test Checkout because tax registrations and product tax classification are not yet approved; Stripe Tax remains off rather than silently collecting nothing.
 - PRs #25–#26 activated the hosted Standard/Pro test catalogue and kept Checkout outside Managed Payments; both merged green and deployed READY.
 - The hosted Standard sandbox journey completed on 1 Sep 2026: Checkout created a 30-day trial, the signed `customer.subscription.created` event projected a `trialing` subscription, duplicate-safe event records were retained, Settings reflected access, and the Stripe Customer Portal opened successfully.
+- PR #27 started M8 with a founder-only operational dashboard and private-control schema; the hosted foundation migration is applied and the sole Replio account is bootstrapped as founder.
 
 ## Known blockers
 
