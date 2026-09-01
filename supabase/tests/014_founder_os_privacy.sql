@@ -1,4 +1,4 @@
-begin;set search_path=public,extensions;select plan(12);
+begin;set search_path=public,extensions;select plan(14);
 insert into auth.users(id,email) values
  ('00000000-0000-4000-8000-000000000141','support-owner@example.test'),
  ('00000000-0000-4000-8000-000000000142','other-owner@example.test'),
@@ -27,5 +27,7 @@ select is(private.has_active_support_grant('00000000-0000-4000-8000-000000000143
 select is((select count(*) from private.support_access_sessions),1::bigint,'support session remains auditable after revocation');
 set local role service_role;set local request.jwt.claims='{"role":"service_role"}';
 select is((public.founder_operational_snapshot('00000000-0000-4000-8000-000000000143')->>'openSupportGrants')::integer,0,'service-only snapshot returns privacy-safe operational counts');
+select is(jsonb_array_length(public.founder_operational_snapshot('00000000-0000-4000-8000-000000000143')->'customers'),3,'founder directory returns operational customer rows');
+select is((public.founder_operational_snapshot('00000000-0000-4000-8000-000000000143')->'customers'->0) ?| array['message_body','draft','private_notes','analysis_output'],false,'founder directory contains no private negotiation fields');
 select * from finish();rollback;
 
