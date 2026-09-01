@@ -135,6 +135,7 @@ M9 — Hardening + closed beta gate
 - [x] Version-controlled offline AI launch corpus expanded to 63 named canonical and adversarial cases without transmitting creator data.
 - [x] Evidence grounding validates that every cited excerpt exists in its referenced selected-thread message.
 - [x] AI contracts reject empty evidence, malformed currencies, blank rationales/strategies/replies, invented reply facts and malformed/refusal provider output.
+- [x] Production accessibility and responsive golden-path audit at 1440px and 390px covers Dashboard, Deals, Deal Workspace, Brands, Insights, Train Replio, Settings and Founder OS; active navigation now uses `aria-current` and keyboard users can skip directly to main content.
 - [ ] Accessibility, responsive, performance, security, backup/restore, rollback and analytics privacy gates.
 
 ## Tests last run
@@ -145,6 +146,9 @@ M9 — Hardening + closed beta gate
 - `pnpm typecheck` — pass.
 - `pnpm test` — pass (101 tests across 15 files, including 63 M9 AI launch-eval cases).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
+- `pnpm lint` and `pnpm typecheck` — pass after M9 navigation accessibility hardening.
+- `pnpm test` — pass (104 tests across 16 files, including active/nested navigation regression coverage).
+- `pnpm build` — pass after M9 navigation accessibility hardening; the first sandboxed attempt was network-blocked while fetching Geist and passed when verification network access was granted.
 - `pnpm check` — pass after M8 worker controls (lint, typecheck, 37 unit tests, production build).
 - GitHub Actions `app` job — pass.
 - GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
@@ -188,7 +192,7 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Run accessibility, responsive and performance audits across the golden path.
+1. Complete the performance portion of the golden-path hardening gate.
 2. Complete the security and analytics privacy audit.
 3. Test backup/restore and release rollback procedures while keeping the M5 production loop consent-gated.
 

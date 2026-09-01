@@ -13,6 +13,8 @@ body { margin: 0; background: var(--canvas); color: var(--ink); font-family: var
 a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; }
 :focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 45%, transparent); outline-offset: 3px; }
+.skip-link { position: fixed; z-index: 100; top: .75rem; left: .75rem; padding: .7rem .9rem; border-radius: var(--radius-sm); background: var(--ink); color: white; transform: translateY(calc(-100% - 1rem)); }
+.skip-link:focus { transform: translateY(0); }
 .landing-shell { min-height: 100vh; padding: 1.5rem clamp(1.25rem, 4vw, 4rem); }
 .landing-nav { display: flex; align-items: center; justify-content: space-between; max-width: 80rem; margin: 0 auto; }
 .wordmark { font-size: 1.25rem; font-weight: 750; letter-spacing: -.04em; }
@@ -45,7 +47,7 @@ button, input, select, textarea { font: inherit; }
 .sidebar { padding: 1.5rem; border-right: 1px solid var(--line); background: var(--surface); }
 .sidebar nav { display: grid; gap: .25rem; margin-top: 3rem; }
 .nav-link { padding: .7rem .8rem; border-radius: var(--radius-sm); color: var(--muted); }
-.nav-link:first-child { background: #edf3ef; color: var(--accent-strong); font-weight: 650; }
+.nav-link-current { background: #edf3ef; color: var(--accent-strong); font-weight: 650; }
 .app-main { padding: clamp(1.5rem, 5vw, 4rem); }
 .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 .page-header h1 { margin: 0; font-size: clamp(2rem, 4vw, 3.4rem); letter-spacing: -.06em; font-weight: 620; }
