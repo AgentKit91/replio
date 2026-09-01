@@ -28,7 +28,8 @@ begin
     if v_action.action_type<>'retry_gmail_sync' or v_action.target_id<>p_event_id::text then raise exception 'idempotency key conflict' using errcode='23505'; end if;
     return true;
   end if;
-  select e,g.watch_status into v_event,v_watch_status from private.gmail_sync_events e join public.gmail_connections g on g.id=e.gmail_connection_id where e.id=p_event_id for update of e;
+  select * into v_event from private.gmail_sync_events e where e.id=p_event_id for update;
+  select g.watch_status into v_watch_status from public.gmail_connections g where g.id=v_event.gmail_connection_id;
   if v_event.id is null or v_event.status<>'failed' then raise exception 'failed Gmail sync not found' using errcode='P0002'; end if;
   if v_event.attempt_count>=5 then raise exception 'Gmail sync attempt cap reached' using errcode='55000'; end if;
   if v_watch_status<>'active' or lower(coalesce(v_event.last_error,''))~'(invalid.grant|unauthori|revok|forbidden|insufficient|credential)' then raise exception 'creator reauthorization required' using errcode='55000'; end if;
