@@ -126,7 +126,8 @@ M8 — Founder OS
 - [x] Creator-controlled support grants are scoped, expire within seven days, revoke immediately and do not grant access without an active audited founder session.
 - [x] Privacy-shielded customer operational directory excludes messages, drafts, notes and analysis output.
 - [x] Versioned, audited AI and outbound-Gmail worker kill switches fail closed at the queue-claim boundary; resuming requires explicit confirmation.
-- [ ] Safe retry/reconcile actions and creator-facing Support Mode controls.
+- [x] Creator-facing Support Mode grant/revoke controls and separately confirmed, audited founder session start/end lifecycle.
+- [ ] Safe retry/reconcile actions.
 
 ## Tests last run
 
@@ -180,8 +181,8 @@ These are external activation/verification blockers, not reasons to redesign or 
 ## Next three tasks
 
 1. Add safe, error-class-aware retry/reconcile controls without retrying the existing consent-gated AI job or ambiguous Gmail sends.
-2. Add creator-facing Support Mode grant/revoke controls and founder session lifecycle UI.
-3. Complete M8 health/incident actions, then begin M9 hardening while keeping the M5 production loop consent-gated.
+2. Complete M8 health/incident acknowledgement and recovery actions.
+3. Begin M9 hardening while keeping the M5 production loop consent-gated.
 
 ## Decision log
 
