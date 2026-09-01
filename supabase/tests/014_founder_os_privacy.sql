@@ -35,6 +35,7 @@ select is(jsonb_array_length(public.founder_worker_controls('00000000-0000-4000-
 select throws_ok($$select public.founder_set_worker_control('00000000-0000-4000-8000-000000000143','gmail_send_enabled',true,1,false,'test-enable-without-confirmation')$$,'22023','enabling a worker requires confirmation','worker enable requires explicit confirmation');
 select is((public.founder_set_worker_control('00000000-0000-4000-8000-000000000143','gmail_send_enabled',false,1,false,'test-disable-gmail-worker')->>'enabled')::boolean,false,'founder can immediately pause outbound Gmail');
 select is((public.founder_set_worker_control('00000000-0000-4000-8000-000000000143','gmail_send_enabled',false,1,false,'test-disable-gmail-worker')->>'replayed')::boolean,true,'repeated control action is idempotent');
+reset role;
 select is((select count(*) from private.founder_actions where idempotency_key='test-disable-gmail-worker' and result='succeeded'),1::bigint,'control mutation creates one successful audit record');
 select * from finish();rollback;
 
