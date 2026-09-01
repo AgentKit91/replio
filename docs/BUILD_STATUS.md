@@ -141,6 +141,7 @@ M9 — Hardening + closed beta gate
 - [x] Performance review keeps the application shell server-rendered and isolates pathname hydration to the six creator-navigation links; production build and golden-path responsive checks pass without adding monitoring cost.
 - [x] Versioned recovery runbook covers low-cost logical backups, isolated restore rehearsal, encrypted-secret dependencies, application rollback and database incident decisions.
 - [x] CI rebuilds the database from migrations and repeats the complete pgTAP suite, proving schema/RLS recovery remains reproducible on every change.
+- [x] Closed-beta go/no-go checklist separates verified engineering gates from founder consent, legal, Google verification, backup rehearsal and tax activation requirements.
 - [ ] Accessibility, responsive, performance, security, backup/restore, rollback and analytics privacy gates.
 
 ## Tests last run
@@ -201,8 +202,8 @@ These are external activation/verification blockers, not reasons to redesign or 
 ## Next three tasks
 
 1. Complete an isolated production-data restore rehearsal when a temporary Supabase target and fresh encrypted logical backup are available.
-2. Consolidate the final closed-beta release checklist and unresolved external activation items.
-3. Run the consent-gated M5 production loop only with the creator's exact authorization.
+2. Run the consent-gated M5 production loop only with the creator's exact authorization for AI transmission and Gmail send.
+3. Publish founder-approved Privacy Policy/Terms and complete Google restricted-scope verification before expanding beyond approved test users.
 
 ## Decision log
 
