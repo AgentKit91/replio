@@ -4,7 +4,7 @@ declare v_ai_cost numeric; v_ai_cost_complete boolean;
 begin
   if coalesce(auth.jwt()->>'role','')<>'service_role' then raise exception 'service role required' using errcode='42501'; end if;
   if not exists(select 1 from private.founder_users f where f.user_id=p_founder_user_id) then return null; end if;
-  select coalesce(sum(r.estimated_cost_usd),0),bool_and(r.estimated_cost_usd is not null) into v_ai_cost,v_ai_cost_complete
+  select coalesce(sum(r.estimated_cost_microunits)::numeric/1000000,0),bool_and(r.estimated_cost_microunits is not null) into v_ai_cost,v_ai_cost_complete
     from public.ai_worker_runs r where r.started_at>=now()-interval '30 days';
   return jsonb_build_object(
     'trials',(select count(*) from public.subscriptions where status='trialing'),
