@@ -118,7 +118,7 @@ M9 — Hardening + closed beta gate
 - [x] Failed-payment and processing-state Settings UX.
 - [x] Full Stripe test Checkout, 30-day trial, signed webhook projection and Customer Portal journey.
 
-### M8 — Founder OS (in progress)
+### M8 — Founder OS (complete)
 
 - [x] Founder-only role bootstrap and server-side operational read boundary.
 - [x] Privacy-shielded Today / Action Centre for billing, Gmail, AI/send queues, recorded AI cost and active support grants.
@@ -130,13 +130,20 @@ M9 — Hardening + closed beta gate
 - [x] Safe, audited incident acknowledgement and labelled-Gmail sync retry with attempt caps, reauthorization blocks and queue idempotency.
 - [x] AI and outbound-send generic retries deliberately remain blocked when creator consent or provider reconciliation is unresolved.
 
+### M9 — Hardening + closed beta gate (in progress)
+
+- [x] Version-controlled offline AI launch corpus expanded to 63 named canonical and adversarial cases without transmitting creator data.
+- [x] Evidence grounding validates that every cited excerpt exists in its referenced selected-thread message.
+- [x] AI contracts reject empty evidence, malformed currencies, blank rationales/strategies/replies, invented reply facts and malformed/refusal provider output.
+- [ ] Accessibility, responsive, performance, security, backup/restore, rollback and analytics privacy gates.
+
 ## Tests last run
 
 1 Sep 2026:
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
-- `pnpm test` — pass (37 tests across 14 files).
+- `pnpm test` — pass (101 tests across 15 files, including 63 M9 AI launch-eval cases).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
 - `pnpm check` — pass after M8 worker controls (lint, typecheck, 37 unit tests, production build).
 - GitHub Actions `app` job — pass.
@@ -181,9 +188,9 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Expand the AI evaluation corpus to the 50+ case launch gate.
-2. Run accessibility, responsive and performance audits across the golden path.
-3. Complete security, backup/restore, rollback and privacy analytics launch checks while keeping the M5 production loop consent-gated.
+1. Run accessibility, responsive and performance audits across the golden path.
+2. Complete the security and analytics privacy audit.
+3. Test backup/restore and release rollback procedures while keeping the M5 production loop consent-gated.
 
 ## Decision log
 
