@@ -1,4 +1,4 @@
-begin;set search_path=public,extensions;select plan(14);
+begin;set search_path=public,extensions;select plan(21);
 insert into auth.users(id,email) values
  ('00000000-0000-4000-8000-000000000141','support-owner@example.test'),
  ('00000000-0000-4000-8000-000000000142','other-owner@example.test'),
@@ -29,5 +29,12 @@ set local role service_role;set local request.jwt.claims='{"role":"service_role"
 select is((public.founder_operational_snapshot('00000000-0000-4000-8000-000000000143')->>'openSupportGrants')::integer,0,'service-only snapshot returns privacy-safe operational counts');
 select is(jsonb_array_length(public.founder_operational_snapshot('00000000-0000-4000-8000-000000000143')->'customers'),3,'founder directory returns operational customer rows');
 select is((public.founder_operational_snapshot('00000000-0000-4000-8000-000000000143')->'customers'->0) ?| array['message_body','draft','private_notes','analysis_output'],false,'founder directory contains no private negotiation fields');
+select is(has_function_privilege('authenticated','public.founder_worker_controls(uuid)','execute'),false,'browser clients cannot read worker controls');
+select is(has_function_privilege('authenticated','public.founder_set_worker_control(uuid,text,boolean,integer,boolean,text)','execute'),false,'browser clients cannot mutate worker controls');
+select is(jsonb_array_length(public.founder_worker_controls('00000000-0000-4000-8000-000000000143')),2,'service boundary returns the two allowlisted worker controls');
+select throws_ok($$select public.founder_set_worker_control('00000000-0000-4000-8000-000000000143','gmail_send_enabled',true,1,false,'test-enable-without-confirmation')$$,'22023','enabling a worker requires confirmation','worker enable requires explicit confirmation');
+select is((public.founder_set_worker_control('00000000-0000-4000-8000-000000000143','gmail_send_enabled',false,1,false,'test-disable-gmail-worker')->>'enabled')::boolean,false,'founder can immediately pause outbound Gmail');
+select is((public.founder_set_worker_control('00000000-0000-4000-8000-000000000143','gmail_send_enabled',false,1,false,'test-disable-gmail-worker')->>'replayed')::boolean,true,'repeated control action is idempotent');
+select is((select count(*) from private.founder_actions where idempotency_key='test-disable-gmail-worker' and result='succeeded'),1::bigint,'control mutation creates one successful audit record');
 select * from finish();rollback;
 
