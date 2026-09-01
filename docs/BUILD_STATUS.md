@@ -138,6 +138,7 @@ M9 — Hardening + closed beta gate
 - [x] Production accessibility and responsive golden-path audit at 1440px and 390px covers Dashboard, Deals, Deal Workspace, Brands, Insights, Train Replio, Settings and Founder OS; active navigation now uses `aria-current` and keyboard users can skip directly to main content.
 - [x] Analytics privacy audit confirms no analytics/tracking SDK or capture calls are installed; private creator content has no analytics transmission path.
 - [x] Browser security boundary applies site-wide framing, object embedding, content sniffing, referrer, HSTS and unnecessary capability restrictions and suppresses the framework signature header.
+- [x] Performance review keeps the application shell server-rendered and isolates pathname hydration to the six creator-navigation links; production build and golden-path responsive checks pass without adding monitoring cost.
 - [ ] Accessibility, responsive, performance, security, backup/restore, rollback and analytics privacy gates.
 
 ## Tests last run
@@ -152,6 +153,7 @@ M9 — Hardening + closed beta gate
 - `pnpm test` — pass (104 tests across 16 files, including active/nested navigation regression coverage).
 - `pnpm build` — pass after M9 navigation accessibility hardening; the first sandboxed attempt was network-blocked while fetching Geist and passed when verification network access was granted.
 - `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build` — pass after M9 HTTP security and analytics-privacy audit (106 tests across 17 files).
+- `pnpm check` — pass after isolating the creator navigation client boundary (106 tests across 17 files).
 - `pnpm check` — pass after M8 worker controls (lint, typecheck, 37 unit tests, production build).
 - GitHub Actions `app` job — pass.
 - GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
@@ -195,9 +197,9 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Complete the performance portion of the golden-path hardening gate.
-2. Complete the security and analytics privacy audit.
-3. Test backup/restore and release rollback procedures while keeping the M5 production loop consent-gated.
+1. Test backup/restore and release rollback procedures while keeping the M5 production loop consent-gated.
+2. Consolidate the final closed-beta release checklist and unresolved external activation items.
+3. Run the consent-gated M5 production loop only with the creator's exact authorization.
 
 ## Decision log
 
