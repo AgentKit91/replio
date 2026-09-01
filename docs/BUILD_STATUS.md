@@ -1,10 +1,10 @@
 # Replio Build Status
 
-**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6 COMPLETE; M7 IN PROGRESS
+**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6–M7 COMPLETE; M8 IN PROGRESS
 
 ## Current milestone
 
-M7 — Stripe subscriptions
+M8 — Founder OS
 
 ## Completed
 
@@ -107,7 +107,7 @@ M7 — Stripe subscriptions
 - [x] Richer private personal trends calculate success rate and median negotiation rounds without combining currencies.
 - [x] Re-identification and threshold regression tests prove public cells exclude linkable identifiers and cannot survive with fewer than five contributions.
 
-### M7 — Stripe subscriptions (in progress)
+### M7 — Stripe subscriptions (complete)
 
 - [x] Configuration-driven provisional Standard/Pro catalogue with hidden Ultra architecture slot.
 - [x] Server-authoritative subscription projection, period usage counters and private idempotent Stripe-event ledger.
@@ -116,7 +116,7 @@ M7 — Stripe subscriptions
 - [x] Idempotent and out-of-order Stripe subscription event tests; successful redirects remain non-authoritative.
 - [x] Stripe test Products/Prices and signed webhook endpoint configuration.
 - [x] Failed-payment and processing-state Settings UX.
-- [ ] Full Stripe test Checkout, trial, webhook and Customer Portal journey.
+- [x] Full Stripe test Checkout, 30-day trial, signed webhook projection and Customer Portal journey.
 
 ## Tests last run
 
@@ -153,6 +153,8 @@ M7 — Stripe subscriptions
 - PR #21 completed M6 threshold aggregation and personal trends; the hosted database has no benchmark contributions or cells and its nightly refresh is active but inert until real outcomes exist.
 - PR #24 added test-mode Checkout, Customer Portal, signed webhooks and the idempotent subscription projection; Stripe test Products/Prices and the test webhook are now configured with restricted server credentials stored only as Vercel Production secrets.
 - Stripe Managed Payments is explicitly disabled for the test Checkout because tax registrations and product tax classification are not yet approved; Stripe Tax remains off rather than silently collecting nothing.
+- PRs #25–#26 activated the hosted Standard/Pro test catalogue and kept Checkout outside Managed Payments; both merged green and deployed READY.
+- The hosted Standard sandbox journey completed on 1 Sep 2026: Checkout created a 30-day trial, the signed `customer.subscription.created` event projected a `trialing` subscription, duplicate-safe event records were retained, Settings reflected access, and the Stripe Customer Portal opened successfully.
 
 ## Known blockers
 
@@ -164,9 +166,9 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Deploy the Stripe test catalogue mapping, apply the three M7 migrations, and verify hosted advisors.
-2. Exercise the full Stripe test Checkout, 30-day trial, webhook projection and Customer Portal journey.
-3. Exercise the M5 loop only after exact consent to transmit the selected fixture to AI and send a real Gmail reply.
+1. Build the M8 founder-role bootstrap and privacy-shielded operational read model.
+2. Add the Founder Today/Action Centre with queue, Gmail, Stripe, AI cost/quality and system-health visibility.
+3. Add audited support-access and safe retry/reconcile controls; keep the M5 production loop consent-gated.
 
 ## Decision log
 
@@ -174,3 +176,4 @@ These are external activation/verification blockers, not reasons to redesign or 
 - **27 Aug 2026 — Next.js `proxy.ts`.** Uses current Next.js 16/Supabase SSR mechanics rather than deprecated middleware naming.
 - **27 Aug 2026 — explicit Data API grants.** Current Supabase projects may not auto-expose new public tables; M1 grants are deliberately least-privilege and paired with RLS.
 - **27 Aug 2026 — restrained configurable visual system.** Neutral green development accent is tokenized pending founder brand assets; no product behaviour depends on it.
+
