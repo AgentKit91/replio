@@ -1,4 +1,4 @@
-begin;set search_path=public,extensions;select plan(21);
+begin;set search_path=public,extensions;select plan(28);
 insert into auth.users(id,email) values
  ('00000000-0000-4000-8000-000000000141','support-owner@example.test'),
  ('00000000-0000-4000-8000-000000000142','other-owner@example.test'),
@@ -37,5 +37,17 @@ select is((public.founder_set_worker_control('00000000-0000-4000-8000-0000000001
 select is((public.founder_set_worker_control('00000000-0000-4000-8000-000000000143','gmail_send_enabled',false,1,false,'test-disable-gmail-worker')->>'replayed')::boolean,true,'repeated control action is idempotent');
 reset role;
 select is((select count(*) from private.founder_actions where idempotency_key='test-disable-gmail-worker' and result='succeeded'),1::bigint,'control mutation creates one successful audit record');
+set local role service_role;set local request.jwt.claims='{"role":"service_role"}';
+select is(has_function_privilege('authenticated','public.founder_start_support_session(uuid,uuid,boolean,text)','execute'),false,'browser clients cannot start founder support sessions');
+select is(jsonb_array_length(public.founder_support_grants('00000000-0000-4000-8000-000000000143')),0,'revoked grants are absent from the founder grant queue');
+reset role;
+insert into public.support_access_grants(workspace_id,granted_by_user_id,scope_type,reason,expires_at)
+values(:'owner_workspace_id','00000000-0000-4000-8000-000000000141','workspace','Second synthetic support test',now()+interval '1 hour') returning id \gset grant2_
+set local role service_role;set local request.jwt.claims='{"role":"service_role"}';
+select throws_ok(format('select public.founder_start_support_session(%L,%L,false,%L)','00000000-0000-4000-8000-000000000143',:'grant2_id','test-session-no-confirm'),'22023','support session requires confirmation','support session start requires confirmation');
+select isnt(public.founder_start_support_session('00000000-0000-4000-8000-000000000143',:'grant2_id',true,'test-start-support-session'),null,'confirmed active grant starts a support session');
+select is(jsonb_array_length(public.founder_support_grants('00000000-0000-4000-8000-000000000143')),1,'active grant appears in founder support queue');
+select ok((public.founder_support_grants('00000000-0000-4000-8000-000000000143')->0->>'sessionId') is not null,'active session is visible without private content');
+select ok(public.founder_end_support_session('00000000-0000-4000-8000-000000000143',(public.founder_support_grants('00000000-0000-4000-8000-000000000143')->0->>'sessionId')::uuid,'test-end-support-session'),'founder can immediately end own session');
 select * from finish();rollback;
 
