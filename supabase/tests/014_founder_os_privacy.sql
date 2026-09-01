@@ -1,4 +1,4 @@
-begin;set search_path=public,extensions;select plan(10);
+begin;set search_path=public,extensions;select plan(12);
 insert into auth.users(id,email) values
  ('00000000-0000-4000-8000-000000000141','support-owner@example.test'),
  ('00000000-0000-4000-8000-000000000142','other-owner@example.test'),
@@ -15,6 +15,7 @@ select is((select count(*) from public.support_access_grants),0::bigint,'another
 select throws_ok(format('insert into public.support_access_grants(workspace_id,granted_by_user_id,scope_type,reason,expires_at) values(%L,%L,%L,%L,now()+interval ''1 hour'')',:'owner_workspace_id','00000000-0000-4000-8000-000000000142','workspace','Cross tenant attempt'),'42501',null,'another creator cannot grant access to the workspace');
 reset role;
 select is(has_schema_privilege('authenticated','private','usage'),false,'browser clients cannot access Founder OS private tables');
+select is(has_function_privilege('authenticated','public.founder_operational_snapshot(uuid)','execute'),false,'browser clients cannot call the founder snapshot');
 select is(private.has_active_support_grant('00000000-0000-4000-8000-000000000143',:'owner_workspace_id',null),false,'founder role alone grants no private access');
 insert into private.support_access_sessions(grant_id,founder_user_id) values(:'grant_id','00000000-0000-4000-8000-000000000143');
 select is(private.has_active_support_grant('00000000-0000-4000-8000-000000000143',:'owner_workspace_id',null),true,'active session plus active grant permits scoped support access');
@@ -24,5 +25,7 @@ select is((select count(*) from public.support_access_grants where revoked_at is
 reset role;
 select is(private.has_active_support_grant('00000000-0000-4000-8000-000000000143',:'owner_workspace_id',null),false,'revocation ends support access immediately');
 select is((select count(*) from private.support_access_sessions),1::bigint,'support session remains auditable after revocation');
+set local role service_role;set local request.jwt.claims='{"role":"service_role"}';
+select is((public.founder_operational_snapshot('00000000-0000-4000-8000-000000000143')->>'openSupportGrants')::integer,0,'service-only snapshot returns privacy-safe operational counts');
 select * from finish();rollback;
 
