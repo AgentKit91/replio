@@ -120,6 +120,15 @@ STRIPE_WEBHOOK_SECRET=
 STRIPE_STANDARD_PRICE_ID=
 STRIPE_PRO_PRICE_ID=
 STRIPE_ULTRA_PRICE_ID=
+STRIPE_LIVE_BILLING_ENABLED=false
+
+# Fail closed until the founder-approved final wording and identity values are configured.
+LEGAL_PAGES_PUBLISHED=false
+LEGAL_ENTITY_NAME=
+LEGAL_CONTACT_EMAIL=
+LEGAL_POSTAL_ADDRESS=
+LEGAL_GOVERNING_LAW=
+LEGAL_EFFECTIVE_DATE=
 
 # AI gateway/provider
 AI_GATEWAY_API_KEY=
@@ -135,3 +144,4 @@ INTERNAL_JOB_SECRET=
 # Founder bootstrap (server only, replace with role record after bootstrap)
 FOUNDER_BOOTSTRAP_EMAIL=
 ```
+
