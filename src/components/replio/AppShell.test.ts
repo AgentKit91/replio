@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { navigationItemIsCurrent } from "./AppShell";
+import { navigationItemIsCurrent } from "./CreatorNavigation";
 
 describe("navigationItemIsCurrent", () => {
   it("marks exact top-level routes as current", () => {
