@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { legalPublicationConfig } from "@/lib/env.server";
 
 export default function Home() {
+  const legal = legalPublicationConfig();
   return (
     <main className="landing-shell">
       <nav className="landing-nav" aria-label="Primary navigation">
@@ -19,6 +21,8 @@ export default function Home() {
           <span className="privacy-note">Only emails you label Replio are processed.</span>
         </div>
       </section>
+      {legal ? <footer className="landing-footer"><Link href="/privacy">Privacy Policy</Link><Link href="/terms">Terms of Service</Link></footer> : null}
     </main>
   );
 }
+

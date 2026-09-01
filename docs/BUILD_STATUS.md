@@ -194,7 +194,7 @@ M9 — Hardening + closed beta gate
 ## Known blockers
 
 1. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
-2. Public launch still requires founder-approved Privacy Policy/Terms wording and completing Google verification for the restricted Gmail scope.
+2. Privacy Policy/Terms routes and Google verification evidence are implemented behind fail-closed publication gates; public launch still requires founder/legal approval, an owned verified domain, OAuth submission and restricted-scope assessment.
 3. Docker is unavailable on this host; database/pgTAP verification runs in GitHub Actions.
 
 These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
@@ -203,7 +203,7 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 1. Complete an isolated production-data restore rehearsal when a temporary Supabase target and fresh encrypted logical backup are available.
 2. Run the consent-gated M5 production loop only with the creator's exact authorization for AI transmission and Gmail send.
-3. Publish founder-approved Privacy Policy/Terms and complete Google restricted-scope verification before expanding beyond approved test users.
+3. Follow `docs/22_GOOGLE_OAUTH_VERIFICATION.md` before expanding beyond approved test users and `docs/23_LIVE_BILLING_ACTIVATION.md` before enabling live billing.
 
 ## Decision log
 

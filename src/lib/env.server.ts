@@ -13,12 +13,19 @@ const serverSchema = z.object({
   GMAIL_TOKEN_ENCRYPTION_KEY: z.string().min(1).optional(),
   GMAIL_TOKEN_ENCRYPTION_KEY_VERSION: z.string().min(1).default("v1"),
   INTERNAL_JOB_SECRET: z.string().min(24).optional(),
-  STRIPE_SECRET_KEY: z.string().regex(/^(rk|sk)_test_/).optional(),
+  STRIPE_SECRET_KEY: z.string().regex(/^(rk|sk)_(test|live)_/).optional(),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
+  STRIPE_LIVE_BILLING_ENABLED: z.enum(["true", "false"]).default("false"),
   AI_GATEWAY_MODEL: z.string().regex(/^[a-z0-9-]+\/[a-z0-9.-]+$/).optional(),
   AI_GATEWAY_FALLBACK_MODEL: z.string().regex(/^[a-z0-9-]+\/[a-z0-9.-]+$/).optional(),
   AI_INPUT_COST_MICRO_PER_MILLION: z.coerce.number().nonnegative().optional(),
   AI_OUTPUT_COST_MICRO_PER_MILLION: z.coerce.number().nonnegative().optional(),
+  LEGAL_PAGES_PUBLISHED: z.enum(["true", "false"]).default("false"),
+  LEGAL_ENTITY_NAME: z.string().min(1).optional(),
+  LEGAL_CONTACT_EMAIL: z.email().optional(),
+  LEGAL_POSTAL_ADDRESS: z.string().min(1).optional(),
+  LEGAL_GOVERNING_LAW: z.string().min(1).optional(),
+  LEGAL_EFFECTIVE_DATE: z.iso.date().optional(),
 });
 
 export const serverEnv = serverSchema.parse({
@@ -35,10 +42,17 @@ export const serverEnv = serverSchema.parse({
   INTERNAL_JOB_SECRET: process.env.INTERNAL_JOB_SECRET || undefined,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || undefined,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || undefined,
+  STRIPE_LIVE_BILLING_ENABLED: process.env.STRIPE_LIVE_BILLING_ENABLED,
   AI_GATEWAY_MODEL: process.env.AI_GATEWAY_MODEL || undefined,
   AI_GATEWAY_FALLBACK_MODEL: process.env.AI_GATEWAY_FALLBACK_MODEL || undefined,
   AI_INPUT_COST_MICRO_PER_MILLION: process.env.AI_INPUT_COST_MICRO_PER_MILLION || undefined,
   AI_OUTPUT_COST_MICRO_PER_MILLION: process.env.AI_OUTPUT_COST_MICRO_PER_MILLION || undefined,
+  LEGAL_PAGES_PUBLISHED: process.env.LEGAL_PAGES_PUBLISHED,
+  LEGAL_ENTITY_NAME: process.env.LEGAL_ENTITY_NAME || undefined,
+  LEGAL_CONTACT_EMAIL: process.env.LEGAL_CONTACT_EMAIL || undefined,
+  LEGAL_POSTAL_ADDRESS: process.env.LEGAL_POSTAL_ADDRESS || undefined,
+  LEGAL_GOVERNING_LAW: process.env.LEGAL_GOVERNING_LAW || undefined,
+  LEGAL_EFFECTIVE_DATE: process.env.LEGAL_EFFECTIVE_DATE || undefined,
 });
 
 export function requireGmailServerEnv() {
@@ -54,5 +68,22 @@ export function requireGmailServerEnv() {
 }
 
 export function requireStripeServerEnv(){
-  return serverSchema.required({STRIPE_SECRET_KEY:true,STRIPE_WEBHOOK_SECRET:true}).parse(serverEnv);
+  const env = serverSchema.required({STRIPE_SECRET_KEY:true,STRIPE_WEBHOOK_SECRET:true}).parse(serverEnv);
+  const isLiveKey = /^(rk|sk)_live_/.test(env.STRIPE_SECRET_KEY);
+  if (isLiveKey !== (env.STRIPE_LIVE_BILLING_ENABLED === "true")) {
+    throw new Error("Stripe key mode does not match STRIPE_LIVE_BILLING_ENABLED");
+  }
+  return env;
 }
+
+export function legalPublicationConfig() {
+  if (serverEnv.LEGAL_PAGES_PUBLISHED !== "true") return null;
+  return serverSchema.required({
+    LEGAL_ENTITY_NAME: true,
+    LEGAL_CONTACT_EMAIL: true,
+    LEGAL_POSTAL_ADDRESS: true,
+    LEGAL_GOVERNING_LAW: true,
+    LEGAL_EFFECTIVE_DATE: true,
+  }).parse(serverEnv);
+}
+
