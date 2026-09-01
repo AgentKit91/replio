@@ -139,6 +139,8 @@ M9 — Hardening + closed beta gate
 - [x] Analytics privacy audit confirms no analytics/tracking SDK or capture calls are installed; private creator content has no analytics transmission path.
 - [x] Browser security boundary applies site-wide framing, object embedding, content sniffing, referrer, HSTS and unnecessary capability restrictions and suppresses the framework signature header.
 - [x] Performance review keeps the application shell server-rendered and isolates pathname hydration to the six creator-navigation links; production build and golden-path responsive checks pass without adding monitoring cost.
+- [x] Versioned recovery runbook covers low-cost logical backups, isolated restore rehearsal, encrypted-secret dependencies, application rollback and database incident decisions.
+- [x] CI rebuilds the database from migrations and repeats the complete pgTAP suite, proving schema/RLS recovery remains reproducible on every change.
 - [ ] Accessibility, responsive, performance, security, backup/restore, rollback and analytics privacy gates.
 
 ## Tests last run
@@ -154,6 +156,7 @@ M9 — Hardening + closed beta gate
 - `pnpm build` — pass after M9 navigation accessibility hardening; the first sandboxed attempt was network-blocked while fetching Geist and passed when verification network access was granted.
 - `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build` — pass after M9 HTTP security and analytics-privacy audit (106 tests across 17 files).
 - `pnpm check` — pass after isolating the creator navigation client boundary (106 tests across 17 files).
+- GitHub Actions `database` job — clean rebuild and repeated pgTAP verification added for the M9 recovery gate.
 - `pnpm check` — pass after M8 worker controls (lint, typecheck, 37 unit tests, production build).
 - GitHub Actions `app` job — pass.
 - GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
@@ -197,7 +200,7 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Test backup/restore and release rollback procedures while keeping the M5 production loop consent-gated.
+1. Complete an isolated production-data restore rehearsal when a temporary Supabase target and fresh encrypted logical backup are available.
 2. Consolidate the final closed-beta release checklist and unresolved external activation items.
 3. Run the consent-gated M5 production loop only with the creator's exact authorization.
 
