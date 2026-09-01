@@ -21,7 +21,7 @@ This is the authoritative go/no-go checklist for admitting creators beyond the f
 ## Required before inviting the first external beta creator
 
 - [ ] Founder approves the exact Privacy Policy and Terms wording and publishes stable URLs.
-- [ ] Google OAuth consent branding/policy URLs are complete; restricted Gmail-scope verification is submitted or the beta remains limited to explicitly approved test users.
+- [ ] Google OAuth consent branding/policy URLs are complete; restricted Gmail-scope verification is submitted or the beta remains limited to explicitly approved test users. The audited gaps and exact submission evidence are recorded in `docs/22_GOOGLE_OAUTH_VERIFICATION.md`.
 - [ ] A fresh encrypted logical database backup is created and its SHA-256 checksums are recorded outside the repository.
 - [ ] A temporary isolated Supabase project is used for the first production-data restore rehearsal; no production cutover is made during the rehearsal.
 - [ ] Founder selects the named beta participants and confirms the support/contact route.
@@ -45,6 +45,7 @@ The final live loop transmits selected labelled-thread content to the configured
 - [ ] Live Stripe products/prices, webhook secret and restricted server key replace the test catalogue through a separately reviewed activation.
 - [ ] Managed backup retention and restore objectives are approved for the expected customer/data volume.
 - [ ] Legal deletion, privacy-request and incident-response procedures are reviewed for the chosen launch markets.
+- [ ] Live billing is activated only after the founder decisions and gated sequence in `docs/23_LIVE_BILLING_ACTIVATION.md`.
 
 ## No-go conditions
 
