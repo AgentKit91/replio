@@ -1,10 +1,10 @@
 # Replio Build Status
 
-**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6–M7 COMPLETE; M8 IN PROGRESS
+**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6–M8 COMPLETE; M9 NEXT
 
 ## Current milestone
 
-M8 — Founder OS
+M9 — Hardening + closed beta gate
 
 ## Completed
 
@@ -127,7 +127,8 @@ M8 — Founder OS
 - [x] Privacy-shielded customer operational directory excludes messages, drafts, notes and analysis output.
 - [x] Versioned, audited AI and outbound-Gmail worker kill switches fail closed at the queue-claim boundary; resuming requires explicit confirmation.
 - [x] Creator-facing Support Mode grant/revoke controls and separately confirmed, audited founder session start/end lifecycle.
-- [ ] Safe retry/reconcile actions.
+- [x] Safe, audited incident acknowledgement and labelled-Gmail sync retry with attempt caps, reauthorization blocks and queue idempotency.
+- [x] AI and outbound-send generic retries deliberately remain blocked when creator consent or provider reconciliation is unresolved.
 
 ## Tests last run
 
@@ -180,9 +181,9 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Add safe, error-class-aware retry/reconcile controls without retrying the existing consent-gated AI job or ambiguous Gmail sends.
-2. Complete M8 health/incident acknowledgement and recovery actions.
-3. Begin M9 hardening while keeping the M5 production loop consent-gated.
+1. Expand the AI evaluation corpus to the 50+ case launch gate.
+2. Run accessibility, responsive and performance audits across the golden path.
+3. Complete security, backup/restore, rollback and privacy analytics launch checks while keeping the M5 production loop consent-gated.
 
 ## Decision log
 
