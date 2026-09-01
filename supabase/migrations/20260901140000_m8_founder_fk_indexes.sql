@@ -1,0 +1,5 @@
+create index feature_flags_updated_by_user_idx on private.feature_flags(updated_by_user_id);
+create index founder_actions_actor_user_idx on private.founder_actions(actor_user_id);
+create index support_access_sessions_founder_user_idx on private.support_access_sessions(founder_user_id);
+create index support_access_grants_granted_by_user_idx on public.support_access_grants(granted_by_user_id);
+
