@@ -25,7 +25,10 @@ export type FounderDashboard = {
   openSupportGrants: number;
   actionItems: FounderActionItem[];
   customers: FounderCustomer[];
+  workerControls: FounderWorkerControl[];
 };
+
+export type FounderWorkerControl = { key: "ai_worker_enabled" | "gmail_send_enabled"; enabled: boolean; description: string; version: number; updatedAt: string };
 
 export type FounderCustomer = {
   userId: string; email: string; name: string; signedUpAt: string; lastActivityAt: string | null;
@@ -33,18 +36,20 @@ export type FounderCustomer = {
   analysedDeals: number; failedJobs: number; supportGrantActive: boolean;
 };
 
-type Snapshot = Omit<FounderDashboard, "actionItems"> & { incidents: FounderActionItem[] };
+type Snapshot = Omit<FounderDashboard, "actionItems" | "workerControls"> & { incidents: FounderActionItem[] };
 
 export async function loadFounderDashboard(): Promise<FounderDashboard> {
   const { userId } = await requireUser();
-  const { data, error } = await createAdminClient().rpc("founder_operational_snapshot", { p_founder_user_id: userId });
-  if (error) throw new Error("Founder operational read model is unavailable");
+  const admin = createAdminClient();
+  const [snapshotResult, controlsResult] = await Promise.all([admin.rpc("founder_operational_snapshot", { p_founder_user_id: userId }), admin.rpc("founder_worker_controls", { p_founder_user_id: userId })]);
+  const { data, error } = snapshotResult;
+  if (error || controlsResult.error) throw new Error("Founder operational read model is unavailable");
   if (!data) notFound();
   const snapshot = data as Snapshot;
   const actionItems = [...snapshot.incidents];
   if (snapshot.unhealthyGmail) actionItems.push({ id: "gmail-health", severity: "warning", title: `${snapshot.unhealthyGmail} Gmail connection${snapshot.unhealthyGmail === 1 ? " needs" : "s need"} attention`, context: "A watch is inactive, expired or missing an expiry.", nextStep: "Ask the creator to reconnect when authorization is invalid; otherwise renew the watch." });
   if (snapshot.failedAi) actionItems.push({ id: "ai-failures", severity: "warning", title: `${snapshot.failedAi} AI analysis job${snapshot.failedAi === 1 ? " has" : "s have"} failed`, context: "Private deal content remains hidden in this operational view.", nextStep: "Inspect the safe error class, then retry only transient failures." });
   if (snapshot.failedSends) actionItems.push({ id: "send-failures", severity: "critical", title: `${snapshot.failedSends} Gmail send job${snapshot.failedSends === 1 ? " has" : "s have"} failed`, context: "No message body or negotiation content is exposed here.", nextStep: "Reconcile provider state before retrying to avoid duplicate sends." });
-  return { ...snapshot, actionItems };
+  return { ...snapshot, actionItems, workerControls: controlsResult.data as FounderWorkerControl[] };
 }
 

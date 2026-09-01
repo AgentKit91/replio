@@ -124,16 +124,19 @@ M8 — Founder OS
 - [x] Privacy-shielded Today / Action Centre for billing, Gmail, AI/send queues, recorded AI cost and active support grants.
 - [x] Founder health, incident, audited-action and versioned feature-flag foundations.
 - [x] Creator-controlled support grants are scoped, expire within seven days, revoke immediately and do not grant access without an active audited founder session.
-- [ ] Safe retry/reconcile actions, customer operational directory and versioned company controls.
+- [x] Privacy-shielded customer operational directory excludes messages, drafts, notes and analysis output.
+- [x] Versioned, audited AI and outbound-Gmail worker kill switches fail closed at the queue-claim boundary; resuming requires explicit confirmation.
+- [ ] Safe retry/reconcile actions and creator-facing Support Mode controls.
 
 ## Tests last run
 
-31 Aug 2026:
+1 Sep 2026:
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
 - `pnpm test` — pass (37 tests across 14 files).
 - `pnpm build` — pass (Next.js 16.3.3 production build).
+- `pnpm check` — pass after M8 worker controls (lint, typecheck, 37 unit tests, production build).
 - GitHub Actions `app` job — pass.
 - GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
 - PRs #9 and #10 — app, database and Vercel checks pass.
@@ -164,6 +167,7 @@ M8 — Founder OS
 - PRs #25–#26 activated the hosted Standard/Pro test catalogue and kept Checkout outside Managed Payments; both merged green and deployed READY.
 - The hosted Standard sandbox journey completed on 1 Sep 2026: Checkout created a 30-day trial, the signed `customer.subscription.created` event projected a `trialing` subscription, duplicate-safe event records were retained, Settings reflected access, and the Stripe Customer Portal opened successfully.
 - PR #27 started M8 with a founder-only operational dashboard and private-control schema; the hosted foundation migration is applied and the sole Replio account is bootstrapped as founder.
+- PRs #28–#31 hardened Support Mode, replaced private-schema reads with service-only RPCs, added the privacy-shielded customer directory and cleared all advised unindexed foreign keys.
 
 ## Known blockers
 
@@ -175,9 +179,9 @@ These are external activation/verification blockers, not reasons to redesign or 
 
 ## Next three tasks
 
-1. Build the M8 founder-role bootstrap and privacy-shielded operational read model.
-2. Add the Founder Today/Action Centre with queue, Gmail, Stripe, AI cost/quality and system-health visibility.
-3. Add audited support-access and safe retry/reconcile controls; keep the M5 production loop consent-gated.
+1. Add safe, error-class-aware retry/reconcile controls without retrying the existing consent-gated AI job or ambiguous Gmail sends.
+2. Add creator-facing Support Mode grant/revoke controls and founder session lifecycle UI.
+3. Complete M8 health/incident actions, then begin M9 hardening while keeping the M5 production loop consent-gated.
 
 ## Decision log
 
