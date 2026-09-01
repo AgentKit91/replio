@@ -136,6 +136,8 @@ M9 — Hardening + closed beta gate
 - [x] Evidence grounding validates that every cited excerpt exists in its referenced selected-thread message.
 - [x] AI contracts reject empty evidence, malformed currencies, blank rationales/strategies/replies, invented reply facts and malformed/refusal provider output.
 - [x] Production accessibility and responsive golden-path audit at 1440px and 390px covers Dashboard, Deals, Deal Workspace, Brands, Insights, Train Replio, Settings and Founder OS; active navigation now uses `aria-current` and keyboard users can skip directly to main content.
+- [x] Analytics privacy audit confirms no analytics/tracking SDK or capture calls are installed; private creator content has no analytics transmission path.
+- [x] Browser security boundary applies site-wide framing, object embedding, content sniffing, referrer, HSTS and unnecessary capability restrictions and suppresses the framework signature header.
 - [ ] Accessibility, responsive, performance, security, backup/restore, rollback and analytics privacy gates.
 
 ## Tests last run
@@ -149,6 +151,7 @@ M9 — Hardening + closed beta gate
 - `pnpm lint` and `pnpm typecheck` — pass after M9 navigation accessibility hardening.
 - `pnpm test` — pass (104 tests across 16 files, including active/nested navigation regression coverage).
 - `pnpm build` — pass after M9 navigation accessibility hardening; the first sandboxed attempt was network-blocked while fetching Geist and passed when verification network access was granted.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build` — pass after M9 HTTP security and analytics-privacy audit (106 tests across 17 files).
 - `pnpm check` — pass after M8 worker controls (lint, typecheck, 37 unit tests, production build).
 - GitHub Actions `app` job — pass.
 - GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
