@@ -37,3 +37,8 @@ jobs:
           version: 2.116.0
       - run: supabase start
       - run: supabase test db
+      - name: Rebuild database from migrations
+        run: supabase db reset
+      - name: Verify rebuilt database
+        run: supabase test db
+
