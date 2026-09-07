@@ -1,10 +1,42 @@
-# Replio Build Status
+# Rep Bureau Build Status
 
-**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6–M8 COMPLETE; M9 NEXT
+> Repository/internal identifiers may still use the historical product name Replio.
+
+**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6–M8 COMPLETE; pre-amendment hardening substantially completed; **new mandatory M9 expanded Phase 1 NEXT**; M10 final hardening follows.
 
 ## Current milestone
 
-M9 — Hardening + closed beta gate
+**M9 — Deal Operations, Admin Automation & Dedicated Creator Email (mandatory expanded Phase 1)**
+
+Canonical scope:
+
+- `docs/24_PHASE1_DEAL_OPERATIONS_ADMIN_AUTOMATION.md`
+- `docs/25_PHASE1_CREATOR_EMAIL_ADDRESS.md`
+
+## 7 September 2026 founder scope amendments
+
+Former Phase 1.5/post-launch operations have been promoted into Phase 1/launch:
+
+- living operational Deal record and provenance;
+- Kanban-esque Deal pipeline;
+- deadlines/deliverable administration;
+- invoice issuer profile;
+- auto-prepared invoices using existing Deal/email information;
+- versioned PDF invoice generation;
+- creator-approved invoice send through Gmail or the Deal's dedicated Rep Bureau address;
+- payment due/outstanding/overdue tracking;
+- prepared payment reminders/chases with creator approval;
+- creator `Paid` / `Still waiting` confirmation;
+- creator financial states for agreed/invoiced/outstanding/overdue/received;
+- optional dedicated Rep Bureau commercial email address per creator workspace;
+- direct brand enquiries to that address;
+- creator-forwarded brand emails from otherwise unconnected mailboxes;
+- full no-Gmail Deal lifecycle through the dedicated address;
+- managed-email attachment, spam/abuse, deliverability, privacy and idempotency controls.
+
+Gmail remains a supported explicit-label source but is no longer required for creators using the dedicated Rep Bureau address. No external mailbox may be scanned automatically.
+
+Existing pre-amendment hardening work remains valid but final affected gates must be rerun as M10 after M9 lands. Codex must not restart M0–M8.
 
 ## Completed
 
@@ -130,85 +162,83 @@ M9 — Hardening + closed beta gate
 - [x] Safe, audited incident acknowledgement and labelled-Gmail sync retry with attempt caps, reauthorization blocks and queue idempotency.
 - [x] AI and outbound-send generic retries deliberately remain blocked when creator consent or provider reconciliation is unresolved.
 
-### M9 — Hardening + closed beta gate (in progress)
+### Pre-amendment hardening work already completed
 
-- [x] Version-controlled offline AI launch corpus expanded to 63 named canonical and adversarial cases without transmitting creator data.
-- [x] Evidence grounding validates that every cited excerpt exists in its referenced selected-thread message.
-- [x] AI contracts reject empty evidence, malformed currencies, blank rationales/strategies/replies, invented reply facts and malformed/refusal provider output.
-- [x] Production accessibility and responsive golden-path audit at 1440px and 390px covers Dashboard, Deals, Deal Workspace, Brands, Insights, Train Replio, Settings and Founder OS; active navigation now uses `aria-current` and keyboard users can skip directly to main content.
-- [x] Analytics privacy audit confirms no analytics/tracking SDK or capture calls are installed; private creator content has no analytics transmission path.
-- [x] Browser security boundary applies site-wide framing, object embedding, content sniffing, referrer, HSTS and unnecessary capability restrictions and suppresses the framework signature header.
-- [x] Performance review keeps the application shell server-rendered and isolates pathname hydration to the six creator-navigation links; production build and golden-path responsive checks pass without adding monitoring cost.
-- [x] Versioned recovery runbook covers low-cost logical backups, isolated restore rehearsal, encrypted-secret dependencies, application rollback and database incident decisions.
-- [x] CI rebuilds the database from migrations and repeats the complete pgTAP suite, proving schema/RLS recovery remains reproducible on every change.
-- [x] Closed-beta go/no-go checklist separates verified engineering gates from founder consent, legal, Google verification, backup rehearsal and tax activation requirements.
-- [ ] Accessibility, responsive, performance, security, backup/restore, rollback and analytics privacy gates.
+- [x] Offline AI launch corpus expanded to 63 canonical/adversarial cases.
+- [x] Evidence grounding and stronger AI-contract validation.
+- [x] Desktop/mobile accessibility/responsive golden-path audit of existing surfaces.
+- [x] Analytics privacy audit with no creator-content analytics path.
+- [x] HTTP/browser security boundary hardening.
+- [x] Performance review of server-rendered shell/client boundary.
+- [x] Recovery runbook and clean schema/RLS rebuild in CI.
+- [x] Closed-beta go/no-go structure.
+
+These checks must be rerun/extended after M9 for new pipeline/invoice/payment/managed-email surfaces.
+
+## M9 — Expanded Phase 1
+
+- [ ] M9A Living operational Deal state/provenance/deadlines, source-neutral across Gmail/managed email.
+- [ ] M9B Kanban-esque pipeline and Action Dashboard.
+- [ ] M9C Invoice issuer profile and auto-prepared invoice review.
+- [ ] M9D Versioned PDF generation + explicit provider-neutral invoice send.
+- [ ] M9E Payment due/overdue tracking + prepared chase + Paid/Still waiting.
+- [ ] M9F Creator financial overview.
+- [ ] M9G Deal-ops RLS/privacy/idempotency/deletion/regression coverage.
+- [ ] M9H Dedicated Rep Bureau creator email: allocation, direct inbound, forwarding, outbound, attachments, spam/abuse, deliverability, privacy and no-Gmail E2E.
+
+## M10 — Final hardening + closed beta gate
+
+- [ ] Rerun full unit/integration/RLS/E2E suite.
+- [ ] Extend AI evals for billing/deadline/payment/forwarded-message extraction.
+- [ ] Accessibility/mobile audit new pipeline/invoice/payment/email-source journeys.
+- [ ] Performance/security/privacy/spam-abuse/deliverability/backup/rollback/analytics gates.
+- [ ] Expanded release checklist passes.
 
 ## Tests last run
 
-1 Sep 2026:
+1 Sep 2026 (before the 7 Sep scope amendments):
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
-- `pnpm test` — pass (101 tests across 15 files, including 63 M9 AI launch-eval cases).
-- `pnpm build` — pass (Next.js 16.3.3 production build).
-- `pnpm lint` and `pnpm typecheck` — pass after M9 navigation accessibility hardening.
-- `pnpm test` — pass (104 tests across 16 files, including active/nested navigation regression coverage).
-- `pnpm build` — pass after M9 navigation accessibility hardening; the first sandboxed attempt was network-blocked while fetching Geist and passed when verification network access was granted.
-- `pnpm lint`, `pnpm typecheck`, `pnpm test` and `pnpm build` — pass after M9 HTTP security and analytics-privacy audit (106 tests across 17 files).
-- `pnpm check` — pass after isolating the creator navigation client boundary (106 tests across 17 files).
-- GitHub Actions `database` job — clean rebuild and repeated pgTAP verification added for the M9 recovery gate.
-- `pnpm check` — pass after M8 worker controls (lint, typecheck, 37 unit tests, production build).
-- GitHub Actions `app` job — pass.
-- GitHub Actions `database` job — pass (`supabase start` + `supabase test db`, including M4 retry and tenant-isolation assertions).
-- PRs #9 and #10 — app, database and Vercel checks pass.
-- Production read-through — Deal Workspace renders and the AI activation control is enabled; it was not clicked, so no real email was sent to an AI provider during verification.
-- Hosted pgTAP Gmail idempotency transaction — pass (6 assertions; rolled back).
+- `pnpm test` — pass, later 106 tests across 17 files after M9-era hardening.
+- `pnpm build` / `pnpm check` — pass after existing accessibility/security/performance changes.
+- GitHub Actions `app` and `database` jobs — pass.
+- CI clean database rebuild + pgTAP — pass.
+- Production read-through — Deal Workspace renders; no real AI/email send was triggered during that verification.
+- Hosted pgTAP Gmail idempotency transaction — pass.
 
-## Migrations/deployments
+These results establish the pre-amendment baseline; they do not mark the new M9 scope complete.
 
-- Applied `identity_foundation` to Supabase project `Replio` in `eu-west-1`.
-- Applied `add_foundation_foreign_key_indexes` after hosted performance-advisor review.
-- Applied `gmail_ingestion_foundation` and `gmail_sync_worker_boundary` to the dedicated hosted Supabase project.
-- Hosted security advisor reports no M2 schema/RLS findings; the remaining leaked-password warning does not apply to Google-only authentication.
-- PR #2 Preview deployment and both GitHub Actions jobs are green.
-- PR #2 merged as `86ac5eec`; its Vercel Production deployment is READY.
-- Google Cloud billing is linked under the free trial. A £5 monthly budget alert is configured; this is an alert rather than a hard spending cap.
-- Pub/Sub topic `replio-gmail-events` and authenticated push subscription `replio-gmail-push` are active with acknowledged-message retention disabled and 31-day inactivity expiry.
-- PRs #4–#6 added privacy-safe webhook diagnostics and the 64-bit-safe Gmail history parser; all app/database CI checks passed.
-- Production deployment `a3e600c` is READY; webhook, queue and worker completed the first labelled-thread sync end to end.
-- M3 migrations applied to hosted Supabase; one active fixture Deal remains intact, brand/contact inference is intentionally skipped for consumer email domains, and the daily expired-deal purge is scheduled.
-- PR #7 merged and production deployment `68dae27` reached READY; PR #8 merged the consumer-domain data-quality correction.
-- M4 pipeline and retry-cap migrations are applied to hosted Supabase; the AI queue remains empty until a creator explicitly requests analysis.
-- PR #10 merged as `4a9583d`; Production deployment `dpl_7A2byt9wL6nLK2ERVoaoJ9xPE4ss` is READY with the low-cost AI model configuration.
-- M5 score/composer and Gmail-send foundations merged in PRs #12–#14; the send queue remains empty and no production email has been sent.
-- PR #15 remediated every Supabase-advised missing foreign-key index; hosted performance advisor reports zero unindexed foreign keys.
-- PR #21 completed M6 threshold aggregation and personal trends; the hosted database has no benchmark contributions or cells and its nightly refresh is active but inert until real outcomes exist.
-- PR #24 added test-mode Checkout, Customer Portal, signed webhooks and the idempotent subscription projection; Stripe test Products/Prices and the test webhook are now configured with restricted server credentials stored only as Vercel Production secrets.
-- Stripe Managed Payments is explicitly disabled for the test Checkout because tax registrations and product tax classification are not yet approved; Stripe Tax remains off rather than silently collecting nothing.
-- PRs #25–#26 activated the hosted Standard/Pro test catalogue and kept Checkout outside Managed Payments; both merged green and deployed READY.
-- The hosted Standard sandbox journey completed on 1 Sep 2026: Checkout created a 30-day trial, the signed `customer.subscription.created` event projected a `trialing` subscription, duplicate-safe event records were retained, Settings reflected access, and the Stripe Customer Portal opened successfully.
-- PR #27 started M8 with a founder-only operational dashboard and private-control schema; the hosted foundation migration is applied and the sole Replio account is bootstrapped as founder.
-- PRs #28–#31 hardened Support Mode, replaced private-schema reads with service-only RPCs, added the privacy-shielded customer directory and cleared all advised unindexed foreign keys.
+## Existing deployments/infrastructure
 
-## Known blockers
+- Dedicated Supabase project, Vercel project, Google Cloud/Gmail/Pub-Sub integration and Stripe test integration are already configured as recorded in prior build history.
+- M1–M4 migrations and later milestone migrations are applied to hosted Supabase as recorded in prior PRs.
+- Existing Gmail watch/queue, AI queue, Gmail send, Stripe subscription and Founder OS foundations should be reused rather than replaced.
+- Existing normalized Deal/message/composer/send foundations should be extended provider-neutrally for managed email rather than duplicated.
+- Existing known-good Vercel deployments remain rollback points.
 
-1. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
-2. Privacy Policy/Terms routes and Google verification evidence are implemented behind fail-closed publication gates; public launch still requires founder/legal approval, an owned verified domain, OAuth submission and restricted-scope assessment.
-3. Docker is unavailable on this host; database/pgTAP verification runs in GitHub Actions.
+## Known blockers / production activation items
 
-These are external activation/verification blockers, not reasons to redesign or discard the local foundation.
+1. Google Auth/Gmail OAuth remains in Testing status and currently permits the founder test account; public Gmail use requires completing OAuth branding/policy/verification as applicable.
+2. Privacy Policy/Terms and Google verification evidence remain founder/legal/activation work.
+3. Dedicated Rep Bureau email requires a founder-approved production domain/subdomain and a verified current inbound/outbound email provider configuration before external beta; Codex should implement against safe test/dev configuration without repeatedly stopping for product questions.
+4. Privacy/Terms must cover hosted processing of messages/attachments sent or forwarded to dedicated creator addresses.
+5. Docker is unavailable on the founder host; database/pgTAP verification runs in GitHub Actions.
+6. Any live proof that transmits a real selected thread to AI or sends a real Gmail/managed-email message remains consent-gated.
+
+These are activation/verification blockers, not reasons to redesign/discard the existing foundation or stop implementing M9 locally/test-first.
 
 ## Next three tasks
 
-1. Complete an isolated production-data restore rehearsal when a temporary Supabase target and fresh encrypted logical backup are available.
-2. Run the consent-gated M5 production loop only with the creator's exact authorization for AI transmission and Gmail send.
-3. Follow `docs/22_GOOGLE_OAUTH_VERIFICATION.md` before expanding beyond approved test users and `docs/23_LIVE_BILLING_ACTIVATION.md` before enabling live billing.
+1. Inspect existing Deal/Gmail/email-message/AI schema and implement **M9A** with the smallest safe migrations/services needed for living admin facts, provenance and deadlines; keep it provider-neutral from the start.
+2. Continue through **M9B–M9H** autonomously, reusing current queue/Realtime/composer/send infrastructure and keeping external sends creator-approved. For M9H, verify current provider docs and implement the dedicated-address no-Gmail path.
+3. After all M9 acceptance criteria pass, run **M10** final hardening and then complete remaining founder-owned Google/legal/email-domain/backup/live-billing gates.
 
-## Decision log
+## Decision log additions
 
-- **27 Aug 2026 — Node 22 minimum.** Supabase client packages dropped Node 20 support; aligns with `docs/18_TECHNICAL_BASELINE.md` verification rule.
-- **27 Aug 2026 — Next.js `proxy.ts`.** Uses current Next.js 16/Supabase SSR mechanics rather than deprecated middleware naming.
-- **27 Aug 2026 — explicit Data API grants.** Current Supabase projects may not auto-expose new public tables; M1 grants are deliberately least-privilege and paired with RLS.
-- **27 Aug 2026 — restrained configurable visual system.** Neutral green development accent is tokenized pending founder brand assets; no product behaviour depends on it.
+- **7 Sep 2026 — Phase 1 scope expanded.** Former Phase 1.5 Deal operations are now mandatory launch scope; `docs/24_PHASE1_DEAL_OPERATIONS_ADMIN_AUTOMATION.md` supersedes older invoice/payment deferrals.
+- **7 Sep 2026 — dedicated creator email promoted.** `docs/25_PHASE1_CREATOR_EMAIL_ADDRESS.md` supersedes the prior deferral of a Rep Bureau-managed creator email; Gmail is optional for this route.
+- **7 Sep 2026 — 90/10 admin principle.** Rep Bureau handles internal admin automatically; creator reviews/approves consequential external actions.
+- **7 Sep 2026 — user-facing name Rep Bureau.** Existing internal `replio` identifiers may remain until a safe dedicated rename is worthwhile; do not burn build credits on cosmetic internal renaming.
 
+Historical implementation decisions from 27 Aug–1 Sep remain valid unless they conflict with the dated amendments.
