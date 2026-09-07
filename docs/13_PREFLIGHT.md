@@ -60,54 +60,68 @@ Codex work:
 - authenticated push verification;
 - incremental sync.
 
-## Dedicated Rep Bureau creator email — build/test preflight
+## Dedicated Rep Bureau creator email — Resend preflight
 
-Canonical behaviour: `docs/25_PHASE1_CREATOR_EMAIL_ADDRESS.md`.
+Canonical behaviour: `docs/25_PHASE1_CREATOR_EMAIL_ADDRESS.md`.  
+Canonical provider choice: `docs/26_EMAIL_PROVIDER_RESEND.md`.
 
-Codex should verify current official documentation and choose the simplest secure provider/provider-combination that supports:
+**Provider is locked for Phase 1: Resend.** Codex should not spend build time choosing another provider unless Resend presents a material blocker.
 
-- authenticated inbound email webhooks/routing on a Rep Bureau-controlled domain/subdomain;
-- outbound email sending from creator-dedicated Rep Bureau addresses;
-- reliable message/provider identifiers for idempotency/reconciliation;
-- production sender authentication/deliverability support;
-- attachment handling compatible with Phase 1 limits/security.
+### Founder/account-owner setup
 
-### Can be implemented before final production domain sign-off
+The founder should:
+
+1. create the Rep Bureau Resend account;
+2. connect the official Resend plugin/connector to Codex when available and grant only the access needed for setup/development;
+3. keep `hello@repbureau.co.uk` and ordinary company email on Zoho;
+4. choose/approve a dedicated creator-email subdomain later (for example `inbox.repbureau.co.uk` or `collab.repbureau.co.uk`);
+5. retain DNS access for `repbureau.co.uk`;
+6. add only the Resend DNS records required for the chosen **subdomain**, not replacement root-domain MX records;
+7. create/store production Resend credentials/webhook secrets through the approved secret stores, never GitHub.
+
+Resend's current agent/Codex tooling can be used to inspect domains/provider configuration and perform approved operations. Human setup of the account and DNS ownership remains founder-controlled.
+
+### Can be implemented before final production subdomain sign-off
 
 - provider abstraction;
 - database/address-allocation model;
-- local/test domain configuration seam;
-- webhook verification mechanics using provider test/sandbox mode where available;
+- `MANAGED_EMAIL_PROVIDER=resend` configuration;
+- local/test receiving setup using Resend-provided/test capability where appropriate;
+- signed Resend `email.received` webhook verification;
 - normalized inbound/outbound message pipeline;
+- receiving-API retrieval of full content/headers/attachments as required;
 - forwarding/parser fixtures;
 - private attachment-storage path;
 - spam/abuse/cost controls;
 - no-Gmail E2E with safe test configuration.
 
-Do **not** repeatedly block coding on the final vanity domain/local-part format if a configurable safe test value works.
+Do **not** repeatedly block coding on the final vanity subdomain/local-part format if a configurable safe test value works.
 
 ### Required before external beta using dedicated addresses
 
 Founder/account-owner work:
 
-- approve a Rep Bureau-owned sending/inbound domain or subdomain;
-- control DNS for that domain;
-- create/verify the chosen email provider account as required;
-- configure provider-required DNS records and current appropriate SPF/DKIM/DMARC policy;
-- configure inbound routing/webhook destination and secrets;
-- configure outbound sender/domain verification;
-- approve any provider billing/limits needed for beta;
-- review provider DPA/retention/security terms as part of legal/privacy launch work.
+- approve the Rep Bureau creator-email subdomain;
+- add/verify Resend receiving MX for that subdomain without changing Zoho root-domain MX;
+- complete Resend sending-domain verification and required current SPF/DKIM configuration;
+- review/configure DMARC appropriately for the Rep Bureau domain setup;
+- connect production inbound webhook destination and signing secret;
+- create/restrict production API credentials as appropriately as Resend currently supports;
+- approve any Resend billing/limits needed for beta;
+- review Resend DPA/retention/security terms as part of legal/privacy launch work.
 
 Codex work:
 
-- verify provider webhook signatures/authentication;
+- use the current official Resend SDK/API/plugin/CLI docs rather than memory;
+- verify raw-body Resend webhook signatures;
 - verify exact recipient-to-workspace routing;
+- retrieve received content/attachments safely through current Resend APIs;
 - verify outbound sender identity/threading;
-- verify replay/idempotency;
+- verify replay/idempotency and send reconciliation;
 - verify attachment/privacy/deletion path;
 - verify abuse/spam/cost controls;
-- record managed-email health in Founder OS without private content exposure.
+- record managed-email health in Founder OS without private content exposure;
+- run direct inbound → reply → reply-back and forwarded-email E2E tests.
 
 ## Required before subscription billing E2E
 
@@ -127,14 +141,14 @@ Codex work:
 ## Production-only / can wait while Codex builds
 
 - final public Rep Bureau domain/DNS;
-- final managed-email domain/subdomain choice;
-- managed-email provider production credentials/limits;
+- final Resend managed-email subdomain choice;
+- Resend production credentials/limits;
 - Stripe live prices/keys;
 - final public plan copy;
 - Google OAuth production verification/branding;
 - production AI budget/model routing;
 - final Knowledge Library content;
-- Privacy Policy / Terms / cookie configuration, including dedicated-email disclosure;
+- Privacy Policy / Terms / cookie configuration, including Resend/dedicated-email disclosure;
 - support/contact address;
 - live PostHog/Sentry or other ops accounts if chosen;
 - score calibration approval;
@@ -165,13 +179,12 @@ GOOGLE_PUBSUB_PUSH_SERVICE_ACCOUNT_EMAIL=
 GMAIL_TOKEN_ENCRYPTION_KEY=
 GMAIL_TOKEN_ENCRYPTION_KEY_VERSION=
 
-# Managed Rep Bureau creator email
-MANAGED_EMAIL_PROVIDER=
+# Managed Rep Bureau creator email — Resend
+MANAGED_EMAIL_PROVIDER=resend
 MANAGED_EMAIL_DOMAIN=
-MANAGED_EMAIL_WEBHOOK_SECRET=
-MANAGED_EMAIL_API_KEY=
-MANAGED_EMAIL_FROM_DOMAIN=
-# Add provider-specific server-only vars only when the chosen provider requires them.
+RESEND_API_KEY=
+RESEND_WEBHOOK_SECRET=
+# Add other Resend server-only vars only if the current SDK/provider setup requires them.
 
 # Stripe subscription billing
 STRIPE_SECRET_KEY=
