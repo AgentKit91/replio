@@ -10,15 +10,16 @@ The repository already contains substantial M0–M9 work. **Do not restart the b
 2. `docs/00_SOURCE_AUTHORITY.md`
 3. `docs/24_PHASE1_DEAL_OPERATIONS_ADMIN_AUTOMATION.md`
 4. `docs/25_PHASE1_CREATOR_EMAIL_ADDRESS.md`
-5. `docs/01_PRODUCT_SPEC.md`
-6. `docs/03_ARCHITECTURE.md`
-7. `docs/04_DATABASE.md`
-8. `docs/05_GMAIL_INTEGRATION.md`
-9. `docs/06_AI_SYSTEM.md`
-10. `docs/12_TESTING_QA.md`
-11. `docs/19_ACCEPTANCE_CRITERIA.md`
-12. `docs/14_BUILD_PLAN.md`
-13. `docs/BUILD_STATUS.md`
+5. `docs/26_EMAIL_PROVIDER_RESEND.md`
+6. `docs/01_PRODUCT_SPEC.md`
+7. `docs/03_ARCHITECTURE.md`
+8. `docs/04_DATABASE.md`
+9. `docs/05_GMAIL_INTEGRATION.md`
+10. `docs/06_AI_SYSTEM.md`
+11. `docs/12_TESTING_QA.md`
+12. `docs/19_ACCEPTANCE_CRITERIA.md`
+13. `docs/14_BUILD_PLAN.md`
+14. `docs/BUILD_STATUS.md`
 
 ## Assignment
 
@@ -26,17 +27,19 @@ The repository already contains substantial M0–M9 work. **Do not restart the b
 2. Treat **both 7 September 2026 founder amendments as mandatory launch scope**:
    - Deal Operations & Admin Automation (`docs/24...`);
    - Dedicated Creator Email Address (`docs/25...`).
-3. Reuse the existing Deal, Gmail, normalized email-message, AI fact/evidence, notification, queue, Realtime, Creator Profile, composer/send and Founder OS foundations wherever possible.
-4. Implement the expanded M9 scope in `docs/14_BUILD_PLAN.md` completely: living operational Deal state, Kanban-esque pipeline, deadlines, invoice preparation/generation/send approval, due-date tracking, payment reminders/chases, payment confirmation, creator financial views **and the optional dedicated Rep Bureau email address**.
-5. Gmail must remain supported through the explicit-label flow, but it is no longer mandatory for creators who choose the Rep Bureau-address route.
-6. A creator with no Gmail OAuth connection must be able to receive/forward a brand enquiry, negotiate, send an invoice and chase payment using their dedicated Rep Bureau address from inside the product.
-7. Preserve source/provenance and creator override priority for auto-populated fields. Forwarded-message headers are creator-supplied evidence, not provider-verified transport metadata.
-8. Optimise for **Rep Bureau does the admin; the creator makes the decisions.** Avoid manual CRM-style entry when trusted information already exists.
-9. Do not auto-send negotiation emails, invoices or chases; consequential external actions require creator review/confirmation.
-10. Do not infer `paid`; creator confirms payment in Phase 1.
-11. Verify current official docs for any inbound/outbound email provider chosen. Keep provider mechanics behind an abstraction and include deliverability, spam/abuse, attachment, privacy and idempotency controls.
-12. After M9 lands, rerun affected hardening/security/accessibility/performance/RLS/E2E gates as M10.
-13. Update `docs/BUILD_STATUS.md` continuously and make reviewable commits/PRs.
+3. Treat **Resend as the locked Phase 1 implementation choice for Rep Bureau-managed creator email** under `docs/26_EMAIL_PROVIDER_RESEND.md`, unless a material technical/security/provider blocker is discovered and documented.
+4. Keep the existing Rep Bureau human/company mailbox such as `hello@repbureau.co.uk` on Zoho. Use a separate Rep Bureau subdomain for Resend receiving/sending; do not disturb the root-domain Zoho MX records.
+5. Reuse the existing Deal, Gmail, normalized email-message, AI fact/evidence, notification, queue, Realtime, Creator Profile, composer/send and Founder OS foundations wherever possible.
+6. Implement the expanded M9 scope in `docs/14_BUILD_PLAN.md` completely: living operational Deal state, Kanban-esque pipeline, deadlines, invoice preparation/generation/send approval, due-date tracking, payment reminders/chases, payment confirmation, creator financial views **and the optional dedicated Rep Bureau email address**.
+7. Gmail must remain supported through the explicit-label flow, but it is no longer mandatory for creators who choose the Rep Bureau-address route.
+8. A creator with no Gmail OAuth connection must be able to receive/forward a brand enquiry, negotiate, send an invoice and chase payment using their dedicated Rep Bureau address from inside the product.
+9. Preserve source/provenance and creator override priority for auto-populated fields. Forwarded-message headers are creator-supplied evidence, not provider-verified transport metadata.
+10. Optimise for **Rep Bureau does the admin; the creator makes the decisions.** Avoid manual CRM-style entry when trusted information already exists.
+11. Do not auto-send negotiation emails, invoices or chases; consequential external actions require creator review/confirmation.
+12. Do not infer `paid`; creator confirms payment in Phase 1.
+13. For Resend, verify current official docs and use the official SDK/API/plugin/CLI rather than implementing from memory. Keep provider mechanics behind the email abstraction and include deliverability, spam/abuse, attachment, privacy, signature-verification and idempotency controls.
+14. After M9 lands, rerun affected hardening/security/accessibility/performance/RLS/E2E gates as M10.
+15. Update `docs/BUILD_STATUS.md` continuously and make reviewable commits/PRs.
 
 ## Stop only for
 
