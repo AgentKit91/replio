@@ -6,13 +6,15 @@
 
 This amendment adds a second first-class Deal email source for creators who do not want to connect Gmail. It supersedes earlier instructions that deferred a Rep Bureau-managed creator inbox/custom creator email.
 
+**Selected Phase 1 provider:** Resend. See `docs/26_EMAIL_PROVIDER_RESEND.md` for the locked implementation choice and Zoho/root-domain boundary.
+
 ## 1. Product decision
 
 Every creator may optionally receive a dedicated Rep Bureau email address on a Rep Bureau-controlled domain.
 
-The exact domain/subdomain is configuration and must not be hard-coded until the production domain is approved. Example shape only:
+The exact production subdomain is configuration and must not be hard-coded until approved. Because normal Rep Bureau business mail already uses Zoho on the root `repbureau.co.uk` domain, the managed creator addresses must use a separate Resend subdomain rather than replacing the root MX records. Example shape only:
 
-`creator-handle@inbox.repbureau.example`
+`creator-handle@inbox.repbureau.co.uk`
 
 The address is designed for commercial/brand-deal communication, not as a general-purpose personal mailbox.
 
@@ -37,7 +39,7 @@ The existing explicit-label flow remains unchanged:
 ### B. Dedicated Rep Bureau address
 
 - no Gmail connection is required;
-- inbound messages sent to the creator's Rep Bureau address are received by Rep Bureau directly;
+- inbound messages sent to the creator's Rep Bureau address are received by Rep Bureau directly through Resend;
 - relevant brand communications create/update Deals;
 - the creator can reply, negotiate, invoice and chase payment from Rep Bureau using the dedicated address;
 - external sends still require creator approval under the 90/10 admin principle.
@@ -76,15 +78,17 @@ Inbound messages that are clearly spam, irrelevant or non-commercial should not 
 
 For a direct brand email to the dedicated address:
 
-1. inbound email provider receives the message;
-2. authenticated/verified provider webhook passes it to Rep Bureau;
-3. persist provider message/thread identifiers idempotently;
-4. sanitize/normalize content and attachments as untrusted input;
+1. Resend receives the message on the configured managed-email subdomain;
+2. a signed `email.received` webhook passes message metadata to Rep Bureau;
+3. verify the raw webhook signature before accepting the event;
+4. persist provider event/message identifiers idempotently and acknowledge quickly;
 5. associate the recipient address with exactly one creator workspace;
-6. create or update a Deal using the existing Deal-domain logic;
-7. run incremental commercial/admin extraction;
-8. surface the Deal and any creator-needed action;
-9. continue future replies in the same provider thread/conversation.
+6. retrieve the full body/headers/attachments from the Resend receiving APIs only as required;
+7. sanitize/normalize content and attachments as untrusted input;
+8. create or update a Deal using the existing Deal-domain logic;
+9. run incremental commercial/admin extraction only after spam/abuse/cost gates;
+10. surface the Deal and any creator-needed action;
+11. continue future replies in the same provider conversation/threading model.
 
 A direct inbound email to the dedicated address is itself an explicit creator-authorized source: the creator chose to publish/use that address for Rep Bureau commercial correspondence. It does not constitute permission to access any other mailbox.
 
@@ -120,7 +124,7 @@ Where supported and useful, attached `.eml` / RFC822 forwards may provide strong
 
 Creators who choose not to connect Gmail must still be able to complete the entire Rep Bureau workflow.
 
-Rep Bureau must therefore support outbound email **from the creator's dedicated Rep Bureau address**, including:
+Rep Bureau must therefore support outbound email through Resend **from the creator's dedicated Rep Bureau address**, including:
 
 - negotiation replies;
 - clarification emails;
@@ -133,19 +137,30 @@ The existing composer/review model applies:
 1. Rep Bureau prepares the draft;
 2. creator reviews/edits;
 3. creator explicitly confirms Send;
-4. provider send is idempotent/reconciled;
+4. Resend provider send is idempotent/reconciled;
 5. outbound message appears immediately in the Deal conversation after confirmed send;
 6. Deal state/admin automation continues normally.
 
 Do not auto-send merely because the address is managed by Rep Bureau.
 
-## 8. Sender identity and deliverability
+## 8. Provider, sender identity and deliverability
 
-Codex must verify current official documentation for the chosen inbound/outbound email provider before implementation.
+**Resend is the selected Phase 1 provider for Rep Bureau-managed creator email.** Codex must not spend implementation time re-running a provider bake-off unless current Resend functionality has a material blocker.
 
-The implementation must support production-grade sender authentication and deliverability on the Rep Bureau-controlled domain, including the current appropriate SPF, DKIM and DMARC setup and provider verification requirements.
+Canonical provider mechanics: `docs/26_EMAIL_PROVIDER_RESEND.md`.
 
-Do not invent provider mechanics from memory. Keep the integration behind an internal email-provider abstraction so a provider can be replaced without rewriting the Deal domain.
+Key rules:
+
+- keep `hello@repbureau.co.uk` and other ordinary Rep Bureau human/company mail on Zoho;
+- use a separate Rep Bureau subdomain for Resend receiving/sending so root-domain Zoho MX is untouched;
+- use Resend Receiving + signed `email.received` webhooks for inbound events;
+- retrieve full received bodies/headers/attachments through Resend receiving APIs when required rather than assuming the webhook contains all content;
+- use the Resend SDK/API behind the provider-neutral outbound abstraction;
+- allocate creator addresses in Rep Bureau/Postgres rather than creating one traditional provider mailbox/user per creator;
+- verify current Resend official docs at implementation time;
+- configure the current appropriate SPF, DKIM, DMARC and provider verification/deliverability requirements before external beta.
+
+Resend currently offers Codex/agent tooling. Where available, connect the founder's Resend account to Codex so it can inspect domains/provider state and perform approved setup work without repeated manual screenshots. Secrets remain server-side and are never committed.
 
 ## 9. Address allocation
 
@@ -158,6 +173,8 @@ Requirements:
 - address changes/aliases must not reassign an old address to another creator while inbound mail could still arrive;
 - production domain is configuration;
 - user-facing address can be generated automatically with an optional safe availability-based handle choice if cheap to implement.
+
+Resend does not require Rep Bureau to pre-create an individual mailbox/sender identity for every local part once the relevant domain is verified. The address allocation is therefore primarily our own database/routing concern.
 
 Do not make address vanity/customization a blocker to the core feature.
 
@@ -180,7 +197,7 @@ Workspace-scoped record with at least:
 
 ### Provider-neutral Deal threads
 
-Extend `deal_threads.provider` beyond Gmail to support a managed Rep Bureau email provider, e.g. `gmail` and `rep_bureau_email`.
+Extend `deal_threads.provider` beyond Gmail to support a managed Rep Bureau email provider, e.g. `gmail` and `rep_bureau_email` / `resend` transport metadata as appropriate.
 
 Provider message/thread identifiers must remain unique within the appropriate connection/address boundary.
 
@@ -207,8 +224,9 @@ Inbound attachments to the Rep Bureau-managed address may need to be stored beca
 Requirements:
 
 - treat all inbound attachments as untrusted;
+- use Resend attachment metadata/download mechanisms only after webhook verification and workspace routing;
 - enforce conservative size/type limits;
-- secure workspace-scoped object storage;
+- secure workspace-scoped object storage when Rep Bureau persists a file beyond provider availability;
 - no automatic execution/rendering of unsafe content;
 - malware/file-safety protections appropriate to the chosen stack before public launch;
 - signed/temporary access only;
@@ -223,7 +241,7 @@ Because creators may publish these addresses publicly, Phase 1 must include basi
 
 At minimum:
 
-- provider/webhook authentication;
+- Resend webhook signature verification;
 - inbound rate limiting / abuse thresholds where appropriate;
 - size limits;
 - sender/domain reputation signals available from the provider may be used as non-authoritative inputs;
@@ -238,7 +256,7 @@ Do not silently discard plausible legitimate brand enquiries solely because an a
 
 Rep Bureau must preserve conversation continuity and avoid duplicate Deals.
 
-- direct managed-address messages use provider thread/message identifiers plus RFC message headers where available;
+- direct managed-address messages use Resend/provider message identifiers plus RFC message headers where available;
 - outbound replies preserve correct reply threading;
 - retries never double-send;
 - repeated inbound webhooks never duplicate messages;
@@ -256,9 +274,9 @@ The dedicated address is intentionally narrower than Gmail OAuth:
 - founder/admin cannot read private content without Support Mode;
 - email bodies/attachments are excluded from analytics;
 - permanent deletion purges private managed-email data and stored attachments according to policy;
-- secrets/provider credentials are server-side only.
+- Resend credentials/webhook signing secrets are server-side only.
 
-Privacy/Terms must accurately disclose that Rep Bureau hosts/processes communications received at the dedicated address.
+Privacy/Terms must accurately disclose that Rep Bureau hosts/processes communications received at the dedicated address and uses a third-party email infrastructure provider.
 
 ## 15. Notifications
 
@@ -304,10 +322,10 @@ This feature is not complete until:
 
 1. Creator can choose the Rep Bureau-address route without connecting Gmail.
 2. A unique dedicated address is allocated and displayed clearly.
-3. Direct external email to that address creates/updates the correct creator Deal idempotently.
+3. Direct external email to that address reaches Rep Bureau through verified Resend receiving and creates/updates the correct creator Deal idempotently.
 4. Creator can forward a brand email from an unconnected mailbox and Rep Bureau creates a usable Deal while preserving forwarded-source provenance.
 5. Ambiguous forwarded sender/reply-to information cannot cause an email to be sent to the wrong party.
-6. Creator can review and send a negotiation reply from the dedicated address.
+6. Creator can review and send a negotiation reply through Resend from the dedicated address.
 7. Subsequent inbound reply returns to the same Deal/thread.
 8. Deal receives the same AI/admin/pipeline capabilities as a Gmail-originated Deal.
 9. Creator can generate and explicitly send an invoice from the dedicated address with the correct PDF.
@@ -315,4 +333,5 @@ This feature is not complete until:
 11. Repeated inbound webhook/send retries cannot duplicate messages/Deals.
 12. Gmail and managed-address sources can coexist without silently duplicating/merging ambiguous Deals.
 13. RLS, attachment storage, deletion, privacy, spam/abuse and cost controls pass tests.
-14. A creator with no Gmail OAuth connection can complete the whole selected brand Deal from enquiry through creator-confirmed payment.
+14. The production Resend subdomain is verified for required sending/receiving capabilities without disturbing Zoho root-domain mail.
+15. A creator with no Gmail OAuth connection can complete the whole selected brand Deal from enquiry through creator-confirmed payment.
