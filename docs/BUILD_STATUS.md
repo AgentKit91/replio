@@ -2,17 +2,20 @@
 
 > Repository/internal identifiers may still use the historical product name Replio.
 
-**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6–M8 COMPLETE; pre-amendment hardening substantially completed; **new mandatory M9 Deal Operations & Admin Automation NEXT**; M10 final hardening follows.
+**Overall:** M0–M4 COMPLETE; M5 consent-gated E2E pending; M6–M8 COMPLETE; pre-amendment hardening substantially completed; **new mandatory M9 expanded Phase 1 NEXT**; M10 final hardening follows.
 
 ## Current milestone
 
-**M9 — Deal Operations & Admin Automation (mandatory expanded Phase 1)**
+**M9 — Deal Operations, Admin Automation & Dedicated Creator Email (mandatory expanded Phase 1)**
 
-Canonical scope: `docs/24_PHASE1_DEAL_OPERATIONS_ADMIN_AUTOMATION.md`.
+Canonical scope:
 
-## 7 September 2026 founder scope amendment
+- `docs/24_PHASE1_DEAL_OPERATIONS_ADMIN_AUTOMATION.md`
+- `docs/25_PHASE1_CREATOR_EMAIL_ADDRESS.md`
 
-Former Phase 1.5 post-negotiation operations have been promoted into Phase 1/launch:
+## 7 September 2026 founder scope amendments
+
+Former Phase 1.5/post-launch operations have been promoted into Phase 1/launch:
 
 - living operational Deal record and provenance;
 - Kanban-esque Deal pipeline;
@@ -20,11 +23,18 @@ Former Phase 1.5 post-negotiation operations have been promoted into Phase 1/lau
 - invoice issuer profile;
 - auto-prepared invoices using existing Deal/email information;
 - versioned PDF invoice generation;
-- Gmail invoice draft/attachment/send with creator approval;
+- creator-approved invoice send through Gmail or the Deal's dedicated Rep Bureau address;
 - payment due/outstanding/overdue tracking;
 - prepared payment reminders/chases with creator approval;
 - creator `Paid` / `Still waiting` confirmation;
-- creator financial states for agreed/invoiced/outstanding/overdue/received.
+- creator financial states for agreed/invoiced/outstanding/overdue/received;
+- optional dedicated Rep Bureau commercial email address per creator workspace;
+- direct brand enquiries to that address;
+- creator-forwarded brand emails from otherwise unconnected mailboxes;
+- full no-Gmail Deal lifecycle through the dedicated address;
+- managed-email attachment, spam/abuse, deliverability, privacy and idempotency controls.
+
+Gmail remains a supported explicit-label source but is no longer required for creators using the dedicated Rep Bureau address. No external mailbox may be scanned automatically.
 
 Existing pre-amendment hardening work remains valid but final affected gates must be rerun as M10 after M9 lands. Codex must not restart M0–M8.
 
@@ -163,29 +173,30 @@ Existing pre-amendment hardening work remains valid but final affected gates mus
 - [x] Recovery runbook and clean schema/RLS rebuild in CI.
 - [x] Closed-beta go/no-go structure.
 
-These checks must be rerun/extended after M9 for new pipeline/invoice/payment surfaces.
+These checks must be rerun/extended after M9 for new pipeline/invoice/payment/managed-email surfaces.
 
-## M9 — Deal Operations & Admin Automation
+## M9 — Expanded Phase 1
 
-- [ ] M9A Living operational Deal state/provenance/deadlines.
+- [ ] M9A Living operational Deal state/provenance/deadlines, source-neutral across Gmail/managed email.
 - [ ] M9B Kanban-esque pipeline and Action Dashboard.
 - [ ] M9C Invoice issuer profile and auto-prepared invoice review.
-- [ ] M9D Versioned PDF generation + explicit Gmail invoice send.
+- [ ] M9D Versioned PDF generation + explicit provider-neutral invoice send.
 - [ ] M9E Payment due/overdue tracking + prepared chase + Paid/Still waiting.
 - [ ] M9F Creator financial overview.
-- [ ] M9G RLS/privacy/idempotency/deletion/regression coverage.
+- [ ] M9G Deal-ops RLS/privacy/idempotency/deletion/regression coverage.
+- [ ] M9H Dedicated Rep Bureau creator email: allocation, direct inbound, forwarding, outbound, attachments, spam/abuse, deliverability, privacy and no-Gmail E2E.
 
 ## M10 — Final hardening + closed beta gate
 
 - [ ] Rerun full unit/integration/RLS/E2E suite.
-- [ ] Extend AI evals for billing/deadline/payment extraction.
-- [ ] Accessibility/mobile audit new pipeline/invoice/payment journeys.
-- [ ] Performance/security/privacy/backup/rollback/analytics gates.
+- [ ] Extend AI evals for billing/deadline/payment/forwarded-message extraction.
+- [ ] Accessibility/mobile audit new pipeline/invoice/payment/email-source journeys.
+- [ ] Performance/security/privacy/spam-abuse/deliverability/backup/rollback/analytics gates.
 - [ ] Expanded release checklist passes.
 
 ## Tests last run
 
-1 Sep 2026 (before the 7 Sep scope amendment):
+1 Sep 2026 (before the 7 Sep scope amendments):
 
 - `pnpm lint` — pass.
 - `pnpm typecheck` — pass.
@@ -203,27 +214,31 @@ These results establish the pre-amendment baseline; they do not mark the new M9 
 - Dedicated Supabase project, Vercel project, Google Cloud/Gmail/Pub-Sub integration and Stripe test integration are already configured as recorded in prior build history.
 - M1–M4 migrations and later milestone migrations are applied to hosted Supabase as recorded in prior PRs.
 - Existing Gmail watch/queue, AI queue, Gmail send, Stripe subscription and Founder OS foundations should be reused rather than replaced.
+- Existing normalized Deal/message/composer/send foundations should be extended provider-neutrally for managed email rather than duplicated.
 - Existing known-good Vercel deployments remain rollback points.
 
-## Known blockers
+## Known blockers / production activation items
 
-1. Google Auth remains in Testing status and currently permits the founder test account; public launch requires completing OAuth branding/policy/verification as applicable.
+1. Google Auth/Gmail OAuth remains in Testing status and currently permits the founder test account; public Gmail use requires completing OAuth branding/policy/verification as applicable.
 2. Privacy Policy/Terms and Google verification evidence remain founder/legal/activation work.
-3. Docker is unavailable on the founder host; database/pgTAP verification runs in GitHub Actions.
-4. Any live proof that transmits a real selected thread to AI or sends a real Gmail message remains consent-gated.
+3. Dedicated Rep Bureau email requires a founder-approved production domain/subdomain and a verified current inbound/outbound email provider configuration before external beta; Codex should implement against safe test/dev configuration without repeatedly stopping for product questions.
+4. Privacy/Terms must cover hosted processing of messages/attachments sent or forwarded to dedicated creator addresses.
+5. Docker is unavailable on the founder host; database/pgTAP verification runs in GitHub Actions.
+6. Any live proof that transmits a real selected thread to AI or sends a real Gmail/managed-email message remains consent-gated.
 
 These are activation/verification blockers, not reasons to redesign/discard the existing foundation or stop implementing M9 locally/test-first.
 
 ## Next three tasks
 
-1. Inspect existing Deal/Gmail/AI schema and implement **M9A** with the smallest safe migrations/services needed for living admin facts, provenance and deadlines.
-2. Continue through **M9B–M9G** autonomously, reusing current queue/Realtime/composer/send infrastructure and keeping external sends creator-approved.
-3. After M9, run **M10** final hardening and then complete remaining founder-owned Google/legal/backup/live-billing gates.
+1. Inspect existing Deal/Gmail/email-message/AI schema and implement **M9A** with the smallest safe migrations/services needed for living admin facts, provenance and deadlines; keep it provider-neutral from the start.
+2. Continue through **M9B–M9H** autonomously, reusing current queue/Realtime/composer/send infrastructure and keeping external sends creator-approved. For M9H, verify current provider docs and implement the dedicated-address no-Gmail path.
+3. After all M9 acceptance criteria pass, run **M10** final hardening and then complete remaining founder-owned Google/legal/email-domain/backup/live-billing gates.
 
 ## Decision log additions
 
 - **7 Sep 2026 — Phase 1 scope expanded.** Former Phase 1.5 Deal operations are now mandatory launch scope; `docs/24_PHASE1_DEAL_OPERATIONS_ADMIN_AUTOMATION.md` supersedes older invoice/payment deferrals.
+- **7 Sep 2026 — dedicated creator email promoted.** `docs/25_PHASE1_CREATOR_EMAIL_ADDRESS.md` supersedes the prior deferral of a Rep Bureau-managed creator email; Gmail is optional for this route.
 - **7 Sep 2026 — 90/10 admin principle.** Rep Bureau handles internal admin automatically; creator reviews/approves consequential external actions.
 - **7 Sep 2026 — user-facing name Rep Bureau.** Existing internal `replio` identifiers may remain until a safe dedicated rename is worthwhile; do not burn build credits on cosmetic internal renaming.
 
-Historical implementation decisions from 27 Aug–1 Sep remain valid unless they conflict with the dated amendment.
+Historical implementation decisions from 27 Aug–1 Sep remain valid unless they conflict with the dated amendments.
