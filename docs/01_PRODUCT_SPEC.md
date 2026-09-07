@@ -1,254 +1,216 @@
-# Replio MVP Product Specification
+# Rep Bureau Phase 1 Product Specification
 
 ## 1. Product definition
 
-Replio is a **commercial intelligence and negotiation manager for individual creators**. It is not a chatbot, generic CRM, accounting product or automatic inbox scanner. The MVP helps a creator take a real brand collaboration email from first offer through negotiation while keeping the creator in control.
+Rep Bureau is an **AI commercial manager and deal-operations assistant for individual creators**. The existing codebase may still contain the historical name Replio.
 
-The long-term company vision is broader — an AI talent/commercial manager and creator operating system — but the MVP remains narrow. Agency mode and other roadmap ideas must not leak into this build.
+The offer analyser/negotiation assistant is the entry point. The Phase 1 product must support the creator from selected brand email through negotiation, agreed terms, deliverables/deadlines, invoicing, payment tracking/chasing and creator-confirmed receipt.
+
+It is not a chatbot, generic CRM, accounting product or automatic inbox scanner.
 
 ### Primary promise
 
-**More money. Better deals. Less stress.**
+**More money. Better deals. Less admin.**
+
+### Core operating principle
+
+**Rep Bureau does the admin. The creator makes the decisions.**
+
+Target roughly 90% administrative work handled automatically and 10% creator review/approval.
+
+- Internal/admin actions: automatic where safe.
+- Consequential external actions: creator approval by default.
+- Manual entry: fallback only when trusted information cannot be found or safely inferred.
 
 ### Core success journey
 
-A creator must be able to:
+A creator can:
 
-1. Sign in with Google.
-2. Connect Gmail with explicit commercial-email permission.
-3. Have Replio create/find a Gmail label named `Replio`.
-4. Apply that label once to a brand collaboration thread.
-5. Have Replio import only that chosen thread and begin analysis in the background.
-6. Open a Deal Workspace where the thread is visible immediately and AI sections are already ready or progressively appear.
-7. See the Replio Score, brand offer, three fee recommendations, commercial risks, negotiation strategy and a suggested reply.
-8. Understand the evidence/rationale behind important recommendations without seeing chain-of-thought.
-9. Edit or intentionally improve the reply.
-10. Send the reply from Replio through the connected Gmail account.
-11. Have future messages in the labelled thread sync automatically into the same Deal.
-12. Continue the negotiation as a living Deal rather than creating new analyses each time.
-13. Close the Deal with an outcome recap and structured commercial learning.
-14. See an honest **Estimated Additional Earnings** value where it genuinely adds value.
+1. Sign in with Google and connect Gmail.
+2. Apply the explicit Rep Bureau/Replio label to a real brand collaboration thread.
+3. Have only that chosen thread imported and analysed.
+4. Open a living Deal Workspace while analysis progresses.
+5. See Rep Bureau Score, current offer, fee recommendations, risks, strategy and a suggested reply.
+6. Edit/approve/send through Gmail.
+7. Have future selected-thread messages update the same Deal automatically.
+8. Have Rep Bureau continuously track fee, deliverables, rights, deadlines, contacts, billing instructions and payment terms with evidence/provenance.
+9. See the Deal move through a calm operational pipeline from negotiation to paid/completed.
+10. When invoice-ready, review an already-prepared invoice populated from existing Deal/profile information.
+11. Approve invoice generation and then review/confirm the drafted Gmail send with PDF attached.
+12. Have payment due date/status tracked automatically.
+13. Receive a prepared overdue chase when needed rather than manually monitoring invoices.
+14. Mark payment `Paid` or `Still waiting`; Rep Bureau never pretends expected money has been received.
+15. See agreed, invoiced, outstanding, overdue and received values clearly distinguished.
+16. Close the Deal with outcome recap and structured commercial learning.
+
+The detailed operational requirements are canonical in `docs/24_PHASE1_DEAL_OPERATIONS_ADMIN_AUTOMATION.md`.
 
 ## 2. Product constitution
 
-The build must preserve these principles:
+- **Rep Bureau advises. The creator decides.**
+- **Rep Bureau does the admin.** Do not turn automation into forms the creator must maintain.
+- **Privacy is a feature.** Analyse only explicitly selected/labeled Gmail conversations.
+- **Every important recommendation/fact is explainable.** Use concise evidence/provenance, not hidden reasoning.
+- **Never invent commercial/billing/payment facts.** Confirmed, Missing and Inferred remain distinct.
+- **User ownership always wins.** User input > approved AI > automatic extraction > imported/older data.
+- **Every field must earn its place.** Ask only when necessary and explain why.
+- **AI is almost invisible.** Product should feel like a proactive commercial manager.
+- **Rep Bureau works while the creator is not looking.** Background jobs react to selected-thread changes and operational dates.
+- **Every AI call must justify its cost.** Cache/diff/reuse and prefer deterministic code.
+- **No silent failures.** Important failures are visible/recoverable.
+- **No accidental scope creep beyond the current Phase 1.**
 
-- **Replio advises. The creator decides.** Never instruct the user to accept or reject a deal as if Replio has authority.
-- **Privacy is a feature.** Replio analyses only Gmail conversations the creator explicitly chooses with the Replio label.
-- **Every important recommendation is explainable.** Use concise evidence/rationale, not hidden reasoning.
-- **Never invent commercial facts.** Terms are Confirmed, Missing or Inferred internally. Inferred is never presented as confirmed.
-- **User ownership always wins.** User input > approved AI suggestion > automatic AI extraction > imported data.
-- **Every field must earn its place.** If Replio asks for information, it must be able to explain how it improves the product.
-- **Replio earns information.** Collect richer context progressively and contextually rather than through a giant onboarding form.
-- **Visual silence.** Fewer, better elements; generous whitespace; low cognitive load.
-- **AI is almost invisible.** The product should feel like a proactive commercial manager, not an LLM interface.
-- **Replio works while you are not looking.** Background jobs should start when the labelled thread changes.
-- **Every AI call must justify its cost.** Cache, diff, route and reuse before generating again.
-- **Evidence strength matters.** Weak benchmark evidence must not be presented as certainty.
-- **No silent failures.** Important failures are surfaced clearly and recoverably.
-- **No scope creep.** Roadmap items remain architecturally possible but unbuilt unless explicitly moved into MVP.
+## 3. Navigation
 
-## 3. MVP navigation
+Use creator mental models:
 
-Use creator mental models, not database terminology.
+- **Dashboard** — what needs the creator now, active deadlines/payment actions, Estimated Additional Earnings.
+- **Deals** — operational pipeline plus list/filter/search.
+- **Brands** — brand history, contacts, private notes/context.
+- **Insights** — earnings uplift, outcomes and creator financial/deal trends.
+- **Train Rep Bureau** — creator profile, goals, rates, red lines, invoice issuer profile, voice/preferences.
+- **Settings** — subscription billing, Gmail, notifications, security/account.
 
-- **Dashboard** — priorities, active deals, meaningful notifications, Estimated Additional Earnings.
-- **Deals** — active / awaiting reply / agreed / completed plus filters and search.
-- **Brands** — brand history, contacts, private notes, relationship context.
-- **Insights** — earnings uplift, negotiation outcomes, personal deal trends; no overwhelming BI dashboard.
-- **Train Replio** — Creator Profile, goals, rate cards, non-negotiables, voice and preferences.
-- **Settings** — billing, Gmail, notifications, security and account.
+## 4. Onboarding and progressive enrichment
 
-## 4. Onboarding
+Target about two minutes to first value. Collect only essential creator identity/market/platform data, Gmail connection and explicit selected-thread consent.
 
-Target approximately two minutes to first useful state. Do not ask for every possible commercial detail upfront.
+Later prompts may collect engagement, average views, prior deals, rate cards, goals, red lines, voice, and invoice-issuer details when invoicing becomes relevant.
 
-### Required early fields
-
-- display/creator name;
-- creator base currency;
-- primary country/market;
-- primary niche/category;
-- main platforms (Instagram, TikTok, YouTube highlighted; Other supported in the data model);
-- enough platform/account information to create the initial creator profile;
-- Google/Gmail connection;
-- explicit acceptance that Replio only processes threads labelled `Replio`.
-
-### Progressive enrichment
-
-Prompt later for engagement, average views, previous deal values, typical rates, rate cards, business goals, red lines, preferred payment/usage terms, voice and similar context.
-
-Never show a generic `Profile 30% complete`. Frame enrichment by benefit, e.g. `Improve your fee recommendations` or `Unlock better negotiation advice`.
+Never show a generic profile-completion percentage. Frame prompts by benefit.
 
 ## 5. Dashboard
 
-The Dashboard is an **Action Dashboard**, not a wall of charts. The first question is `What needs my attention right now?`
+The Dashboard is an **Action Dashboard**, not a chart wall.
 
-### Priority hierarchy
+Priority order:
 
-1. Action required (reply/decision/missing information).
-2. Material commercial opportunity (e.g. meaningful scope to negotiate).
-3. Risk.
-4. Time-sensitive waiting state.
+1. Action required from creator.
+2. Material commercial opportunity.
+3. Risk/conflict/missing fact that cannot be safely resolved.
+4. Time-sensitive deadline/payment state.
 5. Understated success/win.
 
-### Dashboard modules
+Examples of good cards:
 
-- `Your priorities today` — maximum useful handful, not endless feed.
-- `Estimated Additional Earnings` — signature ROI measure, clearly labelled as estimated.
-- Active Deals — concise status + next action.
-- Recent meaningful activity.
-- High-value notifications only.
+- `Approve invoice for £2,200 — all details found`;
+- `£2,200 due Friday — no action needed`;
+- `£2,200 overdue — chase drafted`;
+- `Draft due tomorrow`;
+- `Billing address missing — review needed`.
 
-Progressive disclosure: the homepage contains only what matters now; detail is one click deeper.
+Do not notify the creator about admin Rep Bureau can complete itself.
 
 ## 6. Deal Workspace
 
-Desktop: split workspace. Mobile: equivalent information without cramming two panes side-by-side.
+Desktop may use analysis/operations + conversation panes; mobile must provide equivalent information without cramped side-by-side panes.
 
-### Primary analysis area
+### Analysis order
 
-Order matters:
+1. Rep Bureau/Replio Score
+2. Brand Offer
+3. Recommended Fee: Ideal Ask / Expected Settlement / Minimum Worthwhile Fee
+4. Biggest Risks / Missing Terms
+5. Suggested Reply
+6. Negotiation Strategy
 
-1. **Replio Score** — 0–100 current commercial strength of the opportunity, never an accept/decline instruction.
-2. **Brand Offer** — current structured commercial offer.
-3. **Recommended Fee** — Ideal Ask, Expected Settlement, Minimum Worthwhile Fee, plus potential uplift.
-4. **Biggest Risks / Missing Terms** — prioritised, actionable.
-5. **Suggested Reply** — editable composer within the thread experience.
-6. **Negotiation Strategy** — concise recommended approach.
+Important outputs have collapsed `Why?` evidence.
 
-Important outputs get a collapsed `Why?` explanation that points to the evidence used.
+### Conversation
 
-### Conversation area
+- full selected Gmail thread oldest-to-newest;
+- sent replies appear after confirmed Gmail send;
+- new messages update same Deal;
+- evidence links can jump to relevant passages;
+- composer integrated with thread.
 
-- Full imported Gmail thread, oldest to newest.
-- Sent Replio replies appear immediately after Gmail confirms send.
-- New Gmail messages appear without manual refresh.
-- Evidence links can jump/scroll/highlight the relevant email passage.
-- Composer lives at the bottom of the thread.
+### Operations
 
-### Composer
+The same Deal also exposes, progressively and without duplicative entry:
 
-One strong draft, not three variants. Auto-save continuously.
+- current fee/terms/deliverables;
+- deadlines;
+- contract metadata/status;
+- invoice readiness/status;
+- payment due/status;
+- next action;
+- provenance when a value is uncertain/conflicting.
 
-Intentional rewrite actions include:
+## 7. Deal lifecycle and pipeline
 
-- More assertive
-- More collaborative
-- Shorter
-- More detailed
-- More professional
-- More friendly
-- Push harder on price
-- Focus on usage rights
-- Focus on payment terms
-- Custom instruction
-- Start again
+Internal state can remain granular. Creator-facing operational stages should cover:
 
-Creator edits must be preserved unless `Start again` is explicitly chosen.
+- New / Reviewing
+- Negotiating
+- Agreed / Contract
+- Content in progress
+- Ready to invoice
+- Awaiting payment
+- Paid / Complete
 
-### Respectful challenge
+The pipeline may be Kanban-esque but must remain accessible and usable on mobile without drag-only interaction.
 
-If the user is about to send something that materially conflicts with their own non-negotiables, minimums, goals or a much stronger recommendation, Replio may intervene **once** with a calm warning and two obvious options: review or send anyway. If they send anyway, respect it completely.
+Safe internal state transitions happen automatically from evidence/rules; creator correction always remains possible.
 
-## 7. Deal lifecycle
+One Deal equals one commercial agreement and may link multiple related Gmail threads with explicit roles.
 
-Canonical internal states should cover at least:
+## 8. Invoicing and payment operations
 
-- new
-- reviewing
-- negotiating
-- awaiting_brand
-- awaiting_creator
-- agreed
-- declined
-- lost
-- completed
-- archived
+Mandatory Phase 1 scope is defined in `docs/24_PHASE1_DEAL_OPERATIONS_ADMIN_AUTOMATION.md`.
 
-UI labels translate these into human language such as `Your move`, `Brand reviewing`, `Commercial terms agreed`, `Completed`. Do not make creators interpret database statuses.
+Key rules:
 
-One Deal equals one commercial agreement, even when it contains multiple platforms/deliverables. One Deal may link multiple email threads with explicit roles.
+- invoice details are pre-populated from Deal/profile data;
+- creator never re-enters information already known;
+- uncertain legal/tax/billing details are not guessed;
+- creator reviews invoice before approval;
+- approved invoice generates a versioned PDF;
+- invoice email is drafted with PDF attached and requires explicit send confirmation;
+- payment terms calculate due date automatically;
+- overdue states prepare contextual chase drafts;
+- creator confirms `Paid` / `Still waiting`;
+- received money is never inferred.
 
-## 8. Creator Profile / Train Replio
+## 9. Creator Profile / Train Rep Bureau
 
-### Creator-owned facts
+Creator-owned facts include profile/platform metrics, currency, rate cards, goals, red lines, industries/categories, working/payment preferences and invoice issuer information.
 
-- profile and platform metrics;
-- creator base currency;
-- rate cards;
-- business goals (up to three primary goals);
-- non-negotiables / red lines;
-- industries/categories to prefer/avoid;
-- travel/working/payment preferences;
-- explicit standard negotiation preferences.
+Observed patterns never silently become creator rules. Rep Bureau may suggest a preference and the creator accepts/rejects.
 
-### Replio-observed context
+Voice Profile remains private and learns from approved/sent emails and edits to reduce future editing.
 
-- negotiation patterns;
-- typical outcome ranges;
-- frequently edited reply characteristics;
-- repeated commercial preferences;
-- brand/category patterns.
+No Creator Score.
 
-Observed patterns **never silently become creator rules**. Replio may ask `We've noticed X. Make this a standard preference?` and the creator explicitly accepts/rejects.
+## 10. Brands, contacts, notes and history
 
-### Voice Profile
+Global Brand records contain only safe shared identity/intelligence. Creator-specific contacts, notes, relationships, Deal content, invoices and payment history remain private/workspace-scoped.
 
-Private to the creator. Learn from approved/sent emails and edits to reduce future editing, but do not impersonate the creator outside requested drafting. Never share voice data across creators.
+Deal/Brand notes remain private/searchable.
 
-### No Creator Score
+Incoming Gmail attachments remain provider references in Phase 1. **System-generated invoice PDFs are the explicit exception** defined in the Phase 1 admin amendment.
 
-Do not build one.
+Meaningful AI analyses are immutable snapshots; significant actions create traceable events subject to deletion/privacy rules.
 
-## 9. Brands and contacts
+## 11. Notifications and search
 
-A Brand is a shared global identity containing only non-private brand identity/intelligence. Workspace-specific notes, contacts, relationship history and negotiations remain private.
+Only notify for Action Required, Opportunity, Risk or Success. Payment/deadline notifications must be actionable and non-noisy.
 
-Brand Intelligence starts empty and becomes useful through structured completed Deal outcomes. Do not seed a fake giant brand database.
+Search remains deterministic across Deals, Brands, Contacts and Notes with useful filters; AI/natural-language search remains future scope.
 
-Contacts are reusable Brand children, not duplicated for each Deal.
+## 12. Phase 1 exclusions that remain
 
-## 10. Notes, attachments and history
+Do not build:
 
-- Deal Notes and Brand Notes: private, searchable, basic rich text.
-- Gmail attachments remain in Gmail during MVP. Store references/metadata, not duplicate files.
-- AI re-analysis creates immutable analysis snapshots. Latest shown by default; old snapshots retained for traceability/debugging subject to permanent deletion rules.
-- Significant user/system actions create timeline/audit events.
-
-## 11. Notifications
-
-Only notify when the item is:
-
-- Action Required
-- Opportunity
-- Risk
-- Success
-
-If it does not fit one of those categories, do not generate noise.
-
-## 12. Search
-
-MVP search is deterministic database search, not AI search. Search Deals, Brands, Contacts and Notes with filters such as status, platform, date, brand and value. Universal search returns grouped/prioritised results.
-
-## 13. Empty states
-
-Never show `No data` as the whole experience. Every empty state explains what will appear, why it is empty, what the user should do next and the value that action unlocks. One clear CTA.
-
-## 14. MVP exclusions
-
-Do not build these into the customer MVP:
-
-- automatic full-inbox opportunity detection;
-- Replio-managed inbox/custom email addresses;
+- whole-inbox automatic opportunity detection;
+- Rep Bureau-managed custom inbox addresses;
 - Outlook;
-- agency mode;
-- visible team/shared workspace UI;
-- invoice automation;
-- payment chasing;
-- tax/accounting;
-- contract generation;
-- full contract AI extraction/review pipeline;
+- agency/team/shared-workspace UI;
+- full accounting/bookkeeping/general ledger;
+- tax filing/advice;
+- expense accounting;
+- open banking/bank reconciliation/automatic payment detection;
+- full legal contract AI review/generation;
+- automatic external email/invoice/chase sending without creator approval;
 - calendar integration;
 - media kit generation;
 - opportunity discovery/outreach;
@@ -256,5 +218,3 @@ Do not build these into the customer MVP:
 - Creator Score;
 - fine-tuning;
 - Founder AI/chat assistant.
-
-Architecture may anticipate these, but there must be no accidental UI or half-built feature.

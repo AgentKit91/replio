@@ -2,171 +2,136 @@
 
 ## Operating model
 
-Codex is expected to continue autonomously through the current milestone: inspect code, implement, migrate, test, fix, re-test, update documentation/status and make reviewable commits. Do not stop after generating scaffolding.
+Codex should continue autonomously through the current milestone: inspect existing code, implement, migrate, test, fix, re-test, update documentation/status and make reviewable commits. Do not restart completed foundations and do not stop after scaffolding.
 
-After every meaningful tranche update `docs/BUILD_STATUS.md` with:
-
-- current milestone;
-- completed acceptance items;
-- tests run/results;
-- migrations/deployments made;
-- known issues;
-- next three tasks;
-- founder-owned blocker only if genuinely required.
+After every meaningful tranche update `docs/BUILD_STATUS.md` with current milestone, completed acceptance items, tests/results, migrations/deployments, known issues, next tasks and genuine founder-owned blockers.
 
 ## Branch/release discipline
 
 - `main` = known deployable/stable state.
-- Use small milestone/feature branches or Codex PRs.
-- Preview deployment for review.
+- Use reviewable branches/PRs.
+- Preview deployments for review.
 - Merge only with required CI green.
-- Production releases reversible; retain ability to promote/rollback previous stable deployment.
+- Production releases reversible.
 
-## M0 — Repository + preflight
+## M0–M8 — Existing foundation
 
-**Goal:** Codex can work without repeated access interruptions.
+The repository already contains completed/substantially completed work for:
 
-- create Next.js/TypeScript app with current verified Active LTS;
-- package manager + pinned lockfile;
-- lint/typecheck/test commands;
-- env validation;
-- Vercel/Supabase preview setup;
-- install docs/AGENTS pack;
-- CI;
-- confirm owner actions still needed.
+- M0 repository/preflight;
+- M1 data/Auth/design shell;
+- M2 Gmail label ingestion;
+- M3 Deal domain/workspace UX;
+- M4 AI pipeline;
+- M5 pricing/Score/strategy/reply/send (live consent-gated proof may remain);
+- M6 creator learning/Insights/benchmark foundation;
+- M7 Stripe subscription billing;
+- M8 Founder OS.
 
-**Exit:** Preview builds; CI green; secrets absent; Build Status initialized.
+**Do not rebuild these.** Inspect `docs/BUILD_STATUS.md` and reuse their schema/services/components/tests.
 
-## M1 — Data foundation, Auth and design shell
+## Pre-amendment M9 hardening work
 
-- Supabase migrations for identity/workspaces/creator profile + foundational operation tables;
-- RLS and RLS test harness;
-- Google Sign-In only;
-- create hidden workspace on first login atomically/idempotently;
-- creator app shell/navigation;
-- design tokens/component primitives;
-- minimal two-minute onboarding;
-- mobile shell.
+Hardening work already completed before 7 September 2026 remains valuable and must not be discarded. Because Phase 1 scope has expanded, the final launch gate must be rerun after the new operational scope lands.
 
-**Exit:** user can sign in, onboard and access only own workspace; cross-tenant tests fail closed.
+## M9 — Deal Operations & Admin Automation — MANDATORY PHASE 1
 
-## M2 — Gmail connection + labelled-thread ingestion
+Canonical detail: `docs/24_PHASE1_DEAL_OPERATIONS_ADMIN_AUTOMATION.md`.
 
-- separate Gmail OAuth;
-- encrypted token storage;
-- create/find Replio label;
-- Pub/Sub authenticated webhook;
-- Gmail watch + renewal;
-- durable `gmail-sync` queue;
-- incremental history sync;
-- MIME normalization/security;
-- deal/thread/message schema;
-- duplicate/retry tests.
+### M9A — Living operational Deal state
 
-**Exit:** test labelled thread reliably creates one Deal; reply in same thread updates same Deal; no full-inbox scanning.
+- extend incremental extraction to capture structured Deal deltas for fee, terms, deliverables, contacts/billing instructions and deadlines;
+- preserve evidence/provenance and creator override priority;
+- implement structured deadlines/operational states;
+- automatically derive safe lifecycle transitions;
+- ensure new selected-thread messages update the existing Deal rather than forcing manual entry.
 
-## M3 — Deal domain + workspace UX
+**Exit:** fixture/live-safe selected messages update the Deal record correctly without duplicate CRM entry; conflicts/missing facts surface rather than being guessed.
 
-- deals/list/filter/search;
-- brands/contacts/private notes;
-- Deal Workspace split layout;
-- human-readable state engine;
-- offers/terms/deliverables data;
-- attachments refs;
-- activity timeline;
-- recycle bin.
+### M9B — Pipeline and Action Dashboard
 
-**Exit:** complete non-AI Deal experience works with fixture data and mobile.
+- accessible Kanban-esque operational Deal pipeline;
+- stages through negotiation → content → ready to invoice → awaiting payment → paid/complete;
+- mobile non-drag alternative;
+- Deal cards show value, next action/deadline and meaningful status;
+- Dashboard surfaces only creator-needed decisions/actions plus useful due/overdue information.
 
-## M4 — AI pipeline
+**Exit:** creator can understand every active Deal and what needs them in seconds.
 
-- provider/gateway adapter;
-- orchestrator;
-- five fixed workers;
-- Zod/typed schemas;
-- analysis snapshots/facts/evidence;
-- worker-run cost ledger;
-- background `ai-analysis`;
-- worker-level retry/fallback;
-- Realtime progressive updates;
-- Knowledge Library/version structure;
-- fixture knowledge only for tests.
+### M9C — Invoice issuer profile + invoice preparation
 
-**Exit:** core eval corpus passes fabrication/structure/error-handling gates; Deal stays usable during provider failure.
+- versioned creator-owned invoice issuer/business profile;
+- secure handling of bank/payment instructions and tax identifiers supplied by creator;
+- invoice schema/line items/sequence/idempotency;
+- auto-populate invoice from trusted Deal/profile facts;
+- review UI flags missing/conflicting/uncertain fields;
+- never guess legal/tax identity.
 
-## M5 — Pricing, Score, strategy and reply/send
+**Exit:** an invoice-ready Deal opens to a substantially completed invoice, not a blank form.
 
-- three fee recommendations;
-- configurable Score engine/version;
-- risk/strategy presentation;
-- `Why?` evidence navigation;
-- native integrated composer;
-- autosave/versioning;
-- intentional rewrites preserving edits;
-- respectful challenge once;
-- Gmail send idempotency/threading;
-- state transitions.
+### M9D — PDF generation + Gmail invoice send
 
-**Exit:** full labelled email → analysis → edit/rewrite → send → brand reply loop works E2E.
+- versioned invoice PDF generation/storage or reproducible immutable artifact strategy;
+- secure workspace-scoped access/deletion;
+- draft invoice email in creator voice;
+- attach PDF to correct Gmail Deal/payment thread;
+- explicit creator review/confirmation before send;
+- idempotent send and persistence of invoice/message state;
+- automatic due-date calculation from confirmed payment terms.
 
-## M6 — Creator learning, insights and benchmark foundation
+**Exit:** review → approve invoice → review email+attachment → confirm send works end-to-end without duplicate invoice numbers/files/messages.
 
-- goals, non-negotiables, rate cards, voice/preference structure;
-- contextual profile prompts;
-- completed Deal recap/outcome;
-- EAE calculation/version;
-- anonymised benchmark contribution pipeline;
-- minimum evidence gate;
-- personal Insights;
-- no fake brand intelligence.
+### M9E — Payment tracking/reminders/chasing
 
-**Exit:** completed Deal produces private recap + safe aggregate contribution; deletion/re-identification tests pass.
+- outstanding/due-soon/overdue/paid state engine;
+- configurable reminder thresholds;
+- consider latest payment-thread context/promised payment dates before drafting a chase;
+- prepare contextual chase drafts, never auto-send in Phase 1;
+- log chase history;
+- low-friction `Paid` / `Still waiting` creator confirmation;
+- never infer funds received.
 
-## M7 — Stripe subscriptions
+**Exit:** overdue invoice automatically creates the right review action; creator can confirm payment and close/update the Deal.
 
-- plan catalogue + entitlement service;
-- working Stripe test prices;
-- Checkout + Customer Portal;
-- 30-day trial config;
-- signed webhook state projection;
-- Standard usage limit;
-- Pro cost/fair-use routing;
-- billing Settings;
-- failed payment states.
+### M9F — Creator financial overview
 
-**Exit:** Stripe test journeys work and local access never trusts success URL alone.
+- distinguish Agreed, Ready to invoice, Invoiced, Outstanding, Overdue and Received;
+- keep currencies separate unless versioned FX source exists;
+- update views from Deal/invoice/payment state automatically.
 
-## M8 — Founder OS
+**Exit:** financial status is trustworthy and never treats expected money as cash received.
 
-- founder role bootstrap;
-- Today/Action Centre;
-- business/usage/billing metrics;
-- AI cost/quality/system health;
-- queue/Gmail/Stripe incident visibility;
-- customer operational metadata with private content shield;
-- support-access grants/session;
-- safe retry/reconcile actions;
-- confirmation flow/audit for sensitive actions;
-- feature/config/model controls scoped to MVP.
+### M9G — Security/ops/tests
 
-**Exit:** founder can operate/recover critical MVP systems without casually accessing private creator content.
+- RLS/access matrix for new tables/storage;
+- deletion/purge of invoice/payment private data/artifacts;
+- no private payment/bank details in logs/analytics/Founder OS without Support Mode;
+- durable/idempotent jobs for Deal ops/invoice/reminders as required;
+- unit/integration/E2E tests from `docs/24...` and `docs/19_ACCEPTANCE_CRITERIA.md`;
+- update Founder OS operational health only as needed without exposing private content.
 
-## M9 — Hardening + closed beta gate
+**Exit:** M9 acceptance suite green and existing M0–M8 critical journeys remain green.
+
+## M10 — Final hardening + closed beta gate
+
+Rerun/extend the prior hardening work after M9:
 
 - full unit/integration/RLS/E2E suite;
-- 50+ AI eval cases;
-- accessibility/mobile audit;
+- AI eval corpus including billing/payment extraction cases;
+- accessibility/mobile audit including pipeline/invoice/payment journeys;
 - performance profiling;
 - rate limits/abuse;
-- security review;
+- security/privacy review including generated invoice artifacts;
 - backup/restore/rollback test;
 - analytics privacy audit;
 - production monitoring;
-- launch checklist;
+- release checklist;
 - beta-user feedback fixes.
 
-**Exit:** Launch Readiness Gate passes.
+**Exit:** updated Launch Readiness Gate passes for the expanded Phase 1.
 
 ## Scope protection
 
-If Codex discovers a roadmap item while implementing an interface, create the extension point/schema only when it is cheap and does not complicate MVP. Do not build the feature. Record it under `docs/15_ROADMAP_OUT_OF_SCOPE.md`.
+The new M9 is **not roadmap feature creep**. It is founder-approved Phase 1 scope.
+
+When Codex encounters features beyond `docs/24...`, create cheap extension points only when they do not complicate Phase 1 and record future items in `docs/15_ROADMAP_OUT_OF_SCOPE.md`.
