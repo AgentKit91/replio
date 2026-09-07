@@ -1,4 +1,4 @@
-begin; set search_path=public,extensions; select plan(12);
+begin; set search_path=public,extensions; select plan(16);
 insert into auth.users(id,email) values('00000000-0000-4000-8000-000000000051','ai-one@example.test'),('00000000-0000-4000-8000-000000000052','ai-two@example.test');
 insert into public.deals(workspace_id,title) select workspace_id,'AI fixture deal' from public.workspace_members where user_id='00000000-0000-4000-8000-000000000051' returning id as deal_id,workspace_id \gset
 insert into public.subscriptions(workspace_id,plan_key,status,current_period_starts_at,current_period_ends_at) values(:'workspace_id','standard','active',now(),now()+interval '1 month');
@@ -20,4 +20,11 @@ reset role; update private.ai_analysis_jobs set attempt_count=3;
 set local role service_role; set local request.jwt.claims='{"role":"service_role"}';
 select lives_ok($$select public.finish_ai_analysis((job->>'queue_message_id')::bigint,(job->>'job_id')::uuid,false,'InvalidStructuredOutput') from claimed_ai_job$$,'third failure becomes terminal');
 select is((select state::text from public.analysis_snapshots limit 1),'failed','retry cap leaves a terminal failed snapshot');
+reset role; set local role authenticated; set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000051","role":"authenticated"}';
+select is(public.request_deal_analysis(:'deal_id'),(select id from public.analysis_snapshots limit 1),'creator retry reuses the terminal snapshot');
+select is((select count(*)::int from public.analysis_snapshots),1,'terminal retry does not duplicate the snapshot');
+select is((select state::text from public.analysis_snapshots limit 1),'queued','terminal retry requeues the snapshot');
+reset role;
+select is((select attempt_count from private.ai_analysis_jobs limit 1),0,'explicit retry resets the bounded provider-attempt budget');
 select * from finish(); rollback;
+
