@@ -17,7 +17,8 @@ Technical versions and provider mechanics must be re-verified against current of
 - **Frontend styling:** Tailwind CSS with accessible primitives; bespoke Rep Bureau design tokens.
 - **Billing:** Stripe Checkout/Subscriptions + Customer Portal + signed webhooks for Rep Bureau subscription billing.
 - **Gmail provider:** Google OAuth + Gmail API + Google Cloud Pub/Sub push notifications filtered to the explicit Rep Bureau/Replio label.
-- **Managed creator email provider:** current verified inbound-webhook + outbound-send provider on a Rep Bureau-controlled domain, behind an internal provider abstraction; requirements in `docs/25_PHASE1_CREATOR_EMAIL_ADDRESS.md`.
+- **Managed creator email provider:** **Resend** for custom-subdomain inbound receiving/webhooks + outbound API/SDK sending, behind the internal provider abstraction. Canonical technical choice: `docs/26_EMAIL_PROVIDER_RESEND.md`.
+- **Human/company business email:** existing root-domain mail such as `hello@repbureau.co.uk` remains on Zoho; managed creator receiving must use a separate subdomain so Resend MX does not replace Zoho root MX.
 - **AI:** internal provider-agnostic gateway; Vercel AI SDK/Gateway may be used behind the abstraction if current docs/costs support it.
 - **Analytics:** PostHog behind an analytics adapter.
 - **Error/ops:** structured server logging + operational event tables + Founder OS health; external error tracker may be added if materially useful.
@@ -99,14 +100,17 @@ Do not build one parallel Deal system for managed email.
 - no full inbox scan;
 - Gmail-specific watch/history mechanics remain provider implementation details.
 
-### Dedicated Rep Bureau email
+### Dedicated Rep Bureau email — Resend
 
-- inbound provider webhook maps recipient address to workspace;
+- use a separately verified Rep Bureau subdomain for creator receiving/sending; do not alter root Zoho MX;
+- Resend `email.received` webhook maps recipient address to workspace after signature verification;
+- webhook processing must treat webhook data as event metadata and retrieve full message body/headers/attachments through current Resend receiving APIs when needed;
 - direct and forwarded inbound are normalized into the same message model;
-- outbound negotiation/invoice/chase sends originate from the creator's dedicated address after explicit creator confirmation;
-- inbound attachments may require private object storage;
+- outbound negotiation/invoice/chase sends use the Resend API/SDK and originate from the creator's dedicated address after explicit creator confirmation;
+- creator local parts are allocated by Rep Bureau/Postgres rather than provisioned as one conventional Resend mailbox/user each;
+- inbound attachments may require private object storage after controlled retrieval from Resend;
 - public-address spam/abuse and cost controls are part of the provider boundary;
-- provider/domain configuration is replaceable and not hard-coded into Deal logic.
+- Resend SDK/webhook mechanics stay behind the abstraction so a future provider migration does not alter the Deal domain.
 
 ## Rendering/data boundaries
 
@@ -121,7 +125,7 @@ Do not build one parallel Deal system for managed email.
 Use durable queues for tasks that may outlive a request:
 
 - Gmail incremental sync;
-- managed-email inbound normalization/processing where webhook work cannot finish safely inline;
+- Resend managed-email inbound normalization/processing where webhook work cannot finish safely inline;
 - AI analysis/orchestration;
 - Deal admin extraction/deltas;
 - reply rewrites;
@@ -130,7 +134,7 @@ Use durable queues for tasks that may outlive a request:
 - benchmark aggregation;
 - notifications;
 - Gmail watch renewal/recovery;
-- managed-email/provider health maintenance if required;
+- Resend managed-email/provider health maintenance if required;
 - cleanup/permanent deletion;
 - low-priority metrics aggregation.
 
@@ -173,10 +177,10 @@ No constant polling of the whole app.
 Every integration write or retryable action gets a stable key:
 
 - Gmail message: provider/connection + provider message id unique;
-- managed-email inbound: provider/address + provider message/event id unique;
+- Resend inbound: managed address + provider message/event id unique;
 - Deal thread link: workspace + provider + provider thread/conversation id unique;
 - Gmail Pub/Sub/history event: connection + history window/key unique;
-- managed-email webhook event: provider event id/request identity unique where available;
+- Resend webhook event: verified provider event id/request identity unique;
 - AI analysis job: Deal + input snapshot hash + analysis version unique;
 - email send: provider + draft/send intent id unique;
 - invoice generation: invoice approved version/idempotency key unique;
@@ -197,8 +201,8 @@ Material behaviour that may change without a deploy belongs in versioned/configu
 - feature flags;
 - plan/entitlement catalogue;
 - notification thresholds;
-- managed-email inbound domain;
-- managed-email provider/routing configuration;
+- Resend managed-email inbound/sending subdomain;
+- Resend provider/routing configuration;
 - attachment size/type limits;
 - spam/abuse/cost thresholds.
 
