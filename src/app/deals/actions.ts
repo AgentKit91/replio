@@ -131,3 +131,24 @@ export async function approveManagedAdminEmail(formData:FormData){
   if(error)throw new Error("The draft changed or the recipient is no longer safe. Review it again.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");
 }
 
+export async function saveDealDeadline(formData:FormData){
+  const value=z.object({dealId:z.uuid(),deadlineId:z.union([z.literal(""),z.uuid()]),deadlineType:z.enum(["campaign_start","campaign_end","draft_due","approval_due","publish_due","invoice_due","payment_due","other"]),label:z.string().trim().min(1).max(200),dueAt:z.iso.datetime({local:true}),status:z.enum(["open","completed","cancelled"])}).parse({dealId:formData.get("dealId"),deadlineId:formData.get("deadlineId")??"",deadlineType:formData.get("deadlineType"),label:formData.get("label"),dueAt:formData.get("dueAt"),status:formData.get("status")??"open"});
+  const {supabase}=await requireUser();const {error}=await supabase.rpc("save_deal_deadline",{p_deal_id:value.dealId,p_deadline_id:value.deadlineId||null,p_deadline_type:value.deadlineType,p_label:value.label,p_due_at:new Date(value.dueAt).toISOString(),p_status:value.status});
+  if(error)throw new Error("Unable to save this deadline.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");
+}
+
+export async function saveDealContract(formData:FormData){
+  const value=z.object({dealId:z.uuid(),receivedStatus:z.enum(["not_received","received","not_applicable"]),signatureStatus:z.enum(["not_signed","creator_signed","fully_signed","not_applicable"]),reference:z.string().trim().max(500)}).parse({dealId:formData.get("dealId"),receivedStatus:formData.get("receivedStatus"),signatureStatus:formData.get("signatureStatus"),reference:formData.get("reference")??""});
+  const {supabase}=await requireUser();const {error}=await supabase.rpc("save_deal_contract_reference",{p_deal_id:value.dealId,p_received_status:value.receivedStatus,p_signature_status:value.signatureStatus,p_reference:value.reference});if(error)throw new Error("Unable to save the contract status.");revalidatePath(`/deals/${value.dealId}`);
+}
+
+const decimalQuantity=z.string().trim().regex(/^\d+(?:\.\d{1,3})?$/).transform(Number).refine(value=>value>0&&value<=1_000_000);
+export async function updateDraftInvoice(formData:FormData){
+  const value=z.object({dealId:z.uuid(),invoiceId:z.uuid(),billingEntity:z.string().trim().min(1).max(200),billingAddress:z.string().trim().max(2000),accountsPayableEmail:z.email(),purchaseOrder:z.string().trim().max(200),description:z.string().trim().min(1).max(500),quantity:decimalQuantity,unitAmount:moneySchema,taxAmount:moneySchema,paymentTermsDays:z.coerce.number().int().min(0).max(180)}).parse(Object.fromEntries(formData));
+  const {supabase}=await requireUser();const {error}=await supabase.rpc("update_draft_invoice",{p_invoice_id:value.invoiceId,p_billing_entity:value.billingEntity,p_billing_address:value.billingAddress,p_accounts_payable_email:value.accountsPayableEmail,p_purchase_order:value.purchaseOrder,p_description:value.description,p_quantity:value.quantity,p_unit_amount_minor:Number(value.unitAmount),p_tax_minor:Number(value.taxAmount),p_payment_terms_days:value.paymentTermsDays});if(error)throw new Error("Unable to update the draft invoice.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");
+}
+
+export async function updateAdminEmailDraft(formData:FormData){
+  const value=z.object({dealId:z.uuid(),draftId:z.uuid(),expectedVersion:z.coerce.number().int().positive(),subject:z.string().trim().min(1).max(998),body:z.string().trim().min(1).max(100000)}).parse(Object.fromEntries(formData));const {supabase}=await requireUser();const {error}=await supabase.rpc("update_admin_email_draft",{p_draft_id:value.draftId,p_expected_version:value.expectedVersion,p_subject:value.subject,p_body:value.body});if(error)throw new Error("The email draft changed. Reload and review it again.");revalidatePath(`/deals/${value.dealId}`);
+}
+
