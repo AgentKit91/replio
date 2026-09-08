@@ -1,4 +1,4 @@
-begin;set search_path=public,extensions;select plan(17);
+begin;set search_path=public,extensions;select plan(18);
 insert into auth.users(id,email,raw_user_meta_data) values
  ('00000000-0000-4000-8000-000000000161','email-one@example.test','{"full_name":"Test Creator"}'),
  ('00000000-0000-4000-8000-000000000162','email-two@example.test','{"full_name":"Other Creator"}');
@@ -15,6 +15,7 @@ select is((select count(*) from public.deals where workspace_id=:'one_workspace_
 select is((select transport_provider from public.deal_threads where workspace_id=:'one_workspace_id'),'resend','managed transport uses the shared Deal thread');
 select is((select transport_provider from public.gmail_messages where workspace_id=:'one_workspace_id'),'resend','managed email uses the shared normalized message table');
 select is(public.ingest_managed_email('evt-direct-1','00000000-0000-4000-8000-000000000001','<message-1@brand.test>','brand@brand.test',array[(select address from public.creator_email_addresses where workspace_id=:'one_workspace_id')],array[]::text[],array['brand@brand.test'],'Campaign enquiry','Hello creator',null,now(),'{}','brand@brand.test',null,'fingerprint-one'),(select id from public.gmail_messages where workspace_id=:'one_workspace_id'),'webhook replay returns the original message');
+select is(public.ingest_managed_email('evt-direct-redelivery','00000000-0000-4000-8000-000000000001','<message-1@brand.test>','brand@brand.test',array[(select address from public.creator_email_addresses where workspace_id=:'one_workspace_id')],array[]::text[],array['brand@brand.test'],'Campaign enquiry','Hello creator',null,now(),'{}','brand@brand.test',null,'fingerprint-one'),(select id from public.gmail_messages where workspace_id=:'one_workspace_id'),'provider redelivery with a new event id returns the original message');
 select is((select count(*) from public.gmail_messages where workspace_id=:'one_workspace_id'),1::bigint,'webhook replay cannot duplicate messages');
 select is(public.ingest_managed_email('evt-ambiguous','00000000-0000-4000-8000-000000000002','<message-2@brand.test>','brand@brand.test',array['unknown@inbox.repbureau.test'],array[]::text[],array[]::text[],'Unknown destination','Hello',null,now(),'{}',null,null,'fingerprint-two'),null::uuid,'unknown destination fails closed');
 select is((select status from private.managed_email_events where provider_event_id='evt-ambiguous'),'rejected','ambiguous destination is recorded without content exposure');
