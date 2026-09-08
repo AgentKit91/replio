@@ -1,10 +1,8 @@
-begin;
+begin;set search_path=public,extensions;
 select plan(13);
-select tests.create_supabase_user('admin_mail_user');
-select tests.authenticate_as('admin_mail_user');
-insert into public.workspaces(name) values('Admin mail workspace') returning id as workspace_id \gset
-insert into public.workspace_members(workspace_id,user_id,role) values(:'workspace_id',tests.get_supabase_uid('admin_mail_user'),'owner');
-insert into public.creator_profiles(workspace_id,creator_name) values(:'workspace_id','Creator');
+insert into auth.users(id,email,raw_user_meta_data) values('00000000-0000-4000-8000-000000000181','admin-mail@example.test','{"full_name":"Creator"}');
+select workspace_id from public.workspace_members where user_id='00000000-0000-4000-8000-000000000181' \gset
+set local role authenticated;set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000181","role":"authenticated"}';
 insert into public.creator_email_addresses(workspace_id,address,local_part,domain) values(:'workspace_id','creator@inbox.repbureau.test','creator','inbox.repbureau.test');
 insert into public.brands(workspace_id,name) values(:'workspace_id','Brand') returning id as brand_id \gset
 insert into public.deals(workspace_id,brand_id,title,status,operational_stage,currency,final_agreed_minor) values(:'workspace_id',:'brand_id','Campaign','agreed','ready_to_invoice','GBP',100000) returning id as deal_id \gset
