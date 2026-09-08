@@ -21,7 +21,9 @@ select is((select state from public.provider_email_drafts where invoice_id=:'inv
 select is((select status from public.invoices where id=:'invoice_id'),'ready','queueing does not claim the invoice was sent');
 
 update public.invoices set status='sent',sent_at=now() where id=:'invoice_id';
+reset role;
 insert into public.payment_reminders(workspace_id,invoice_id,reminder_kind,subject,body,due_snapshot,idempotency_key) values(:'workspace_id',:'invoice_id','overdue','Payment reminder','Please confirm payment.',current_date-1,'test-reminder') returning id as reminder_id \gset
+set local role authenticated;set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000181","role":"authenticated"}';
 select isnt(public.prepare_payment_chase_email(:'reminder_id','managed_email'),null,'payment chase is prepared');
 select is((select status from public.payment_reminders where id=:'reminder_id'),'draft','preparation keeps reminder draft-only');
 select is((select count(*) from public.provider_email_drafts),2::bigint,'preparing chase adds one reviewable draft');
