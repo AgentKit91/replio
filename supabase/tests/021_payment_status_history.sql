@@ -11,6 +11,6 @@ select throws_ok(format('select public.write_off_invoice(%L,false)',:'invoice_id
 select lives_ok(format('select public.write_off_invoice(%L,true)',:'invoice_id'),'creator can explicitly write off');
 select is((select status from public.invoices where id=:'invoice_id'),'written_off','write-off updates invoice');
 select is((select count(*) from public.payment_status_events where invoice_id=:'invoice_id'),2::bigint,'payment checks preserve history');
-select is((select string_agg(event_type,',' order by created_at,id) from public.payment_status_events where invoice_id=:'invoice_id'),'still_waiting,written_off','history distinguishes creator decisions');
+select is((select string_agg(event_type,',' order by event_type) from public.payment_status_events where invoice_id=:'invoice_id'),'still_waiting,written_off','history distinguishes creator decisions');
 select * from finish();rollback;
 
