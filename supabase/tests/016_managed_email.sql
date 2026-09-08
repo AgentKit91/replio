@@ -4,7 +4,7 @@ insert into auth.users(id,email,raw_user_meta_data) values
  ('00000000-0000-4000-8000-000000000162','email-two@example.test','{"full_name":"Other Creator"}');
 select workspace_id from public.workspace_members where user_id='00000000-0000-4000-8000-000000000161' \gset one_
 set local role authenticated;set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000161","role":"authenticated"}';
-select like(public.allocate_creator_email_address('inbox.repbureau.test'),'%@inbox.repbureau.test','creator receives an address on the configured subdomain');
+select ok(public.allocate_creator_email_address('inbox.repbureau.test') like '%@inbox.repbureau.test','creator receives an address on the configured subdomain');
 select is(public.allocate_creator_email_address('inbox.repbureau.test'),(select address from public.creator_email_addresses where workspace_id=:'one_workspace_id'),'allocation is idempotent');
 select is((select count(*) from public.creator_email_addresses),1::bigint,'one primary address is allocated');
 set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000162","role":"authenticated"}';
