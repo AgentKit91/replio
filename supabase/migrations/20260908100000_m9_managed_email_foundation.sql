@@ -45,7 +45,7 @@ create unique index gmail_messages_ingestion_fingerprint_idx on public.gmail_mes
 
 create or replace function public.persist_gmail_thread(p_workspace_id uuid,p_gmail_connection_id uuid,p_provider_thread_id text,p_title text,p_messages jsonb)
 returns uuid language plpgsql security definer set search_path='' as $$
-declare v_deal_id uuid;v_thread_id uuid;v_message jsonb;v_message_id uuid;v_attachment jsonb;
+declare v_deal_id uuid;v_thread_id uuid;v_message jsonb;v_message_id uuid;v_attachment jsonb;v_latest_inbound timestamptz;
 begin
   if coalesce(auth.jwt()->>'role','')<>'service_role' then raise exception 'service role required' using errcode='42501';end if;
   if not exists(select 1 from public.gmail_connections where id=p_gmail_connection_id and workspace_id=p_workspace_id and watch_status='active') then raise exception 'active workspace Gmail connection required' using errcode='42501';end if;
@@ -58,8 +58,11 @@ begin
     else insert into public.gmail_messages(workspace_id,deal_thread_id,provider_message_id,provider_thread_id,provider_history_id,internal_date,direction,from_address,to_addresses,cc_addresses,subject,body_text,body_html_sanitized,provider_label_ids,raw_headers,transport_provider,reply_to_addresses,original_sender_address,forwarded_by_address,ingestion_fingerprint)
       values(p_workspace_id,v_thread_id,v_message->>'provider_message_id',p_provider_thread_id,nullif(v_message->>'provider_history_id','')::numeric,(v_message->>'internal_date')::timestamptz,v_message->>'direction',v_message->>'from_address',coalesce(array(select jsonb_array_elements_text(v_message->'to_addresses')),'{}'),coalesce(array(select jsonb_array_elements_text(v_message->'cc_addresses')),'{}'),coalesce(v_message->>'subject',''),coalesce(v_message->>'body_text',''),v_message->>'body_html_sanitized',coalesce(array(select jsonb_array_elements_text(v_message->'provider_label_ids')),'{}'),coalesce(v_message->'raw_headers','{}'::jsonb),'gmail',coalesce(array(select jsonb_array_elements_text(v_message->'reply_to_addresses')),'{}'),v_message->>'original_sender_address',v_message->>'forwarded_by_address',v_message->>'ingestion_fingerprint')
       on conflict(workspace_id,ingestion_fingerprint) where ingestion_fingerprint is not null do update set updated_at=now() returning id into v_message_id;end if;
+    if v_message->>'direction'='inbound' then v_latest_inbound:=greatest(coalesce(v_latest_inbound,'-infinity'::timestamptz),(v_message->>'internal_date')::timestamptz);end if;
     for v_attachment in select value from jsonb_array_elements(coalesce(v_message->'attachments','[]'::jsonb)) loop insert into public.gmail_attachment_references(workspace_id,gmail_message_id,provider_attachment_id,filename,mime_type,size_bytes) values(p_workspace_id,v_message_id,v_attachment->>'provider_attachment_id',v_attachment->>'filename',v_attachment->>'mime_type',nullif(v_attachment->>'size_bytes','')::bigint) on conflict(gmail_message_id,provider_attachment_id) do update set filename=excluded.filename,mime_type=excluded.mime_type,size_bytes=excluded.size_bytes;end loop;
-  end loop;return v_deal_id;
+  end loop;
+  if exists(select 1 from public.reply_drafts where deal_id=v_deal_id and sent_at<v_latest_inbound) then update public.deals set status='awaiting_creator',human_status_code='your_reply_needed',updated_at=now() where id=v_deal_id and status='awaiting_brand';end if;
+  return v_deal_id;
 end $$;
 revoke all on function public.persist_gmail_thread(uuid,uuid,text,text,jsonb) from public,anon,authenticated;grant execute on function public.persist_gmail_thread(uuid,uuid,text,text,jsonb) to service_role;
 
