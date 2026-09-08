@@ -7,6 +7,7 @@ import { requireUser } from "@/features/auth/require-user";
 import { dealStates } from "@/features/deals/state";
 import { replyRewriteOutput } from "@/features/ai/contracts";
 import { VercelAiGateway } from "@/features/ai/gateway";
+import {ensureInvoicePdf} from "@/features/invoices/ensure-pdf";
 
 const idSchema = z.string().uuid();
 const stateSchema = z.enum(Object.keys(dealStates) as [keyof typeof dealStates, ...(keyof typeof dealStates)[]]);
@@ -100,8 +101,10 @@ export async function prepareInvoice(formData:FormData){
 export async function finaliseInvoice(formData:FormData){
   const value=z.object({dealId:z.uuid(),invoiceId:z.uuid(),expectedTotal:z.coerce.number().int().nonnegative()}).parse({dealId:formData.get("dealId"),invoiceId:formData.get("invoiceId"),expectedTotal:formData.get("expectedTotal")});
   const {supabase}=await requireUser();const {error}=await supabase.rpc("finalise_invoice",{p_invoice_id:value.invoiceId,p_expected_total_minor:value.expectedTotal});
-  if(error)throw new Error("The invoice changed or is not ready for final review.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");
+  if(error)throw new Error("The invoice changed or is not ready for final review.");await ensureInvoicePdf(supabase,value.invoiceId);revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");
 }
+
+export async function generateInvoicePdf(formData:FormData){const value=z.object({dealId:z.uuid(),invoiceId:z.uuid()}).parse({dealId:formData.get("dealId"),invoiceId:formData.get("invoiceId")});const {supabase}=await requireUser();await ensureInvoicePdf(supabase,value.invoiceId);revalidatePath(`/deals/${value.dealId}`);}
 
 export async function confirmInvoicePaid(formData:FormData){
   const value=z.object({dealId:z.uuid(),invoiceId:z.uuid(),confirmation:z.literal("confirmed")}).parse({dealId:formData.get("dealId"),invoiceId:formData.get("invoiceId"),confirmation:formData.get("confirmation")});
