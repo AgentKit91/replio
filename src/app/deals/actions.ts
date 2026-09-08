@@ -152,3 +152,7 @@ export async function updateAdminEmailDraft(formData:FormData){
   const value=z.object({dealId:z.uuid(),draftId:z.uuid(),expectedVersion:z.coerce.number().int().positive(),subject:z.string().trim().min(1).max(998),body:z.string().trim().min(1).max(100000)}).parse(Object.fromEntries(formData));const {supabase}=await requireUser();const {error}=await supabase.rpc("update_admin_email_draft",{p_draft_id:value.draftId,p_expected_version:value.expectedVersion,p_subject:value.subject,p_body:value.body});if(error)throw new Error("The email draft changed. Reload and review it again.");revalidatePath(`/deals/${value.dealId}`);
 }
 
+export async function recordInvoiceStillWaiting(formData:FormData){const value=z.object({dealId:z.uuid(),invoiceId:z.uuid()}).parse(Object.fromEntries(formData));const {supabase}=await requireUser();const {error}=await supabase.rpc("record_invoice_still_waiting",{p_invoice_id:value.invoiceId});if(error)throw new Error("Unable to record the payment check.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");}
+
+export async function writeOffInvoice(formData:FormData){const value=z.object({dealId:z.uuid(),invoiceId:z.uuid(),confirmation:z.literal("write-off")}).parse(Object.fromEntries(formData));const {supabase}=await requireUser();const {error}=await supabase.rpc("write_off_invoice",{p_invoice_id:value.invoiceId,p_confirmation:true});if(error)throw new Error("Unable to write off this invoice.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");revalidatePath("/insights");}
+
