@@ -2,7 +2,6 @@ begin;set search_path=public,extensions;
 select plan(13);
 insert into auth.users(id,email,raw_user_meta_data) values('00000000-0000-4000-8000-000000000181','admin-mail@example.test','{"full_name":"Creator"}');
 select workspace_id from public.workspace_members where user_id='00000000-0000-4000-8000-000000000181' \gset
-set local role authenticated;set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000181","role":"authenticated"}';
 insert into public.creator_email_addresses(workspace_id,address,local_part,domain) values(:'workspace_id','creator@inbox.repbureau.test','creator','inbox.repbureau.test');
 insert into public.brands(workspace_id,name) values(:'workspace_id','Brand') returning id as brand_id \gset
 insert into public.deals(workspace_id,brand_id,title,status,operational_stage,currency,final_agreed_minor) values(:'workspace_id',:'brand_id','Campaign','agreed','ready_to_invoice','GBP',100000) returning id as deal_id \gset
@@ -10,6 +9,7 @@ insert into public.invoice_issuer_profiles(workspace_id,legal_name,address,email
 insert into public.invoices(workspace_id,deal_id,issuer_profile_id,status,invoice_number,currency,subtotal_minor,payment_terms_days,issue_date,due_date,billing_entity,billing_address,accounts_payable_email,creator_reviewed_at)
 values(:'workspace_id',:'deal_id',:'issuer_id','ready','RB-0001','GBP',100000,30,current_date,current_date+30,'Brand Ltd','2 Road','ap@brand.test',now()) returning id as invoice_id \gset
 insert into public.invoice_versions(workspace_id,invoice_id,version,snapshot,pdf_storage_path,pdf_sha256) values(:'workspace_id',:'invoice_id',1,'{}','workspace/invoice/v1.pdf','abc');
+set local role authenticated;set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000181","role":"authenticated"}';
 
 select isnt(public.prepare_invoice_email(:'invoice_id','managed_email'),null,'invoice email is prepared');
 select is((select state from public.provider_email_drafts where invoice_id=:'invoice_id'),'draft','preparation never approves');
