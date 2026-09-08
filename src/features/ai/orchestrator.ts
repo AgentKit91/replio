@@ -10,7 +10,7 @@ import { calculateDealScore } from "./score";
 type Message = { id: string; direction: "inbound"|"outbound"; subject: string; body_text: string; internal_date: string };
 const order: WorkerName[] = ["commercial_extractor","pricing_engine","risk_engine","strategy_engine","reply_engine"];
 const instructions: Record<WorkerName,string> = {
-  commercial_extractor:"Extract only facts supported by the supplied selected-thread messages. Mark absent material terms missing. Every confirmed fact needs short evidence.",
+  commercial_extractor:"Extract only facts supported by the supplied selected-thread messages. Mark absent material terms missing. Return material billing/campaign fields in operational_facts and explicit dated obligations in deadlines. Every confirmed fact and Deal delta needs short evidence. Never invent a date or billing fact.",
   pricing_engine:"Return three distinct fee recommendations. Use only supplied extracted facts; call out missing material inputs. Do not invent benchmarks.",
   risk_engine:"Prioritise material commercial risks and clarification needs. This is commercial guidance, not legal advice.",
   strategy_engine:"Return a concise negotiation sequence. Respect missing facts and never make the final accept or decline decision.",
@@ -37,6 +37,7 @@ export async function runDealAnalysis(input:{ admin:SupabaseClient; gateway:AiGa
     }
   }
   const extraction = workerContracts.commercial_extractor.parse(combined.commercial_extractor);
+  const {error:deltaError}=await input.admin.rpc("apply_analysis_deal_deltas",{p_workspace_id:input.workspaceId,p_deal_id:input.dealId,p_snapshot_id:input.snapshotId,p_facts:extraction.operational_facts??[],p_deadlines:extraction.deadlines??[]});if(deltaError)throw deltaError;
   const rows = extractionFactRows(extraction,{workspaceId:input.workspaceId,snapshotId:input.snapshotId,dealId:input.dealId});
   const { error: deleteFactsError } = await input.admin.from("analysis_facts").delete().eq("snapshot_id",input.snapshotId).eq("source_owner","ai_extraction");
   if(deleteFactsError) throw deleteFactsError;
@@ -53,3 +54,4 @@ export async function runDealAnalysis(input:{ admin:SupabaseClient; gateway:AiGa
   if(draft.source_snapshot_id===input.snapshotId&&draft.version===1){const {error:versionError}=await input.admin.from("reply_versions").upsert({workspace_id:input.workspaceId,reply_draft_id:draft.id,version:1,subject:draft.subject,body:draft.body,change_kind:"ai_initial",source_snapshot_id:input.snapshotId},{onConflict:"reply_draft_id,version",ignoreDuplicates:true}); if(versionError) throw versionError;}
   return combined;
 }
+
