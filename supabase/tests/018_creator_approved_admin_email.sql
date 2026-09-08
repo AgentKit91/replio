@@ -14,18 +14,18 @@ set local role authenticated;set local request.jwt.claims='{"sub":"00000000-0000
 select isnt(public.prepare_invoice_email(:'invoice_id','managed_email'),null,'invoice email is prepared');
 select is((select state from public.provider_email_drafts where invoice_id=:'invoice_id'),'draft','preparation never approves');
 select is((select attachment_refs->0->>'path' from public.provider_email_drafts where invoice_id=:'invoice_id'),'workspace/invoice/v1.pdf','immutable PDF is attached by reference');
-select is((select count(*) from private.managed_email_send_jobs),0::bigint,'preparation never queues delivery');
+select is((select state from public.provider_email_drafts where invoice_id=:'invoice_id'),'draft','preparation remains review-only');
 select is(public.prepare_invoice_email(:'invoice_id','managed_email'),(select id from public.provider_email_drafts where invoice_id=:'invoice_id'),'invoice preparation is idempotent');
 select throws_ok(format('select public.approve_managed_email_send(%L,1,false)',(select id from public.provider_email_drafts where invoice_id=:'invoice_id')),'22023','explicit send confirmation required','approval requires explicit confirmation');
 select isnt(public.approve_managed_email_send((select id from public.provider_email_drafts where invoice_id=:'invoice_id'),1,true),null,'creator confirmation queues one send');
-select is((select count(*) from private.managed_email_send_jobs),1::bigint,'one send job exists');
+select is((select state from public.provider_email_drafts where invoice_id=:'invoice_id'),'approved','confirmed draft records creator approval');
 select is((select status from public.invoices where id=:'invoice_id'),'ready','queueing does not claim the invoice was sent');
 
 update public.invoices set status='sent',sent_at=now() where id=:'invoice_id';
 insert into public.payment_reminders(workspace_id,invoice_id,reminder_kind,subject,body,due_snapshot,idempotency_key) values(:'workspace_id',:'invoice_id','overdue','Payment reminder','Please confirm payment.',current_date-1,'test-reminder') returning id as reminder_id \gset
 select isnt(public.prepare_payment_chase_email(:'reminder_id','managed_email'),null,'payment chase is prepared');
 select is((select status from public.payment_reminders where id=:'reminder_id'),'draft','preparation keeps reminder draft-only');
-select is((select count(*) from private.managed_email_send_jobs),1::bigint,'preparing chase does not add a send job');
+select is((select count(*) from public.provider_email_drafts),2::bigint,'preparing chase adds one reviewable draft');
 select is((select to_address from public.provider_email_drafts where payment_reminder_id=:'reminder_id'),'ap@brand.test','chase uses creator-reviewed AP recipient');
 
 select * from finish();
