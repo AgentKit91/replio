@@ -8,7 +8,7 @@ const navigation = [
   { href: "/deals", label: "Deals" },
   { href: "/brands", label: "Brands" },
   { href: "/insights", label: "Insights" },
-  { href: "/train-replio", label: "Train Replio" },
+  { href: "/train-replio", label: "Your rules" },
   { href: "/settings", label: "Settings" },
 ];
 

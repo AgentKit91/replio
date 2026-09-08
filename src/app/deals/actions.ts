@@ -73,7 +73,7 @@ export async function rewriteReply(input:z.infer<typeof rewriteSchema>):Promise<
     const {data:version,error}=await supabase.rpc("apply_reply_rewrite",{p_deal_id:value.dealId,p_body:result.output.body,p_expected_version:value.expectedVersion,p_instruction:value.instruction,p_start_again:value.startAgain});
     if(error||typeof version!=="number")return {ok:false,message:"The draft changed before the rewrite could be saved."};
     revalidatePath(`/deals/${value.dealId}`);return {ok:true,body:result.output.body,version};
-  }catch{return {ok:false,message:"Replio could not rewrite this draft. Your current wording is unchanged."};}
+  }catch{return {ok:false,message:"Rep Bureau could not rewrite this draft. Your current wording is unchanged."};}
 }
 
 const moneySchema=z.string().trim().regex(/^\d+(?:\.\d{1,2})?$/).transform((value)=>{const [whole,fraction=""]=value.split(".");return BigInt(whole)*BigInt(100)+BigInt(fraction.padEnd(2,"0"));}).refine((value)=>value<=BigInt(Number.MAX_SAFE_INTEGER));
@@ -84,3 +84,28 @@ export async function completeDealOutcome(formData:FormData){
   const {error}=await supabase.rpc("complete_deal_outcome",{p_deal_id:dealId,p_outcome:outcome,p_final_amount_minor:Number(finalAmount),p_negotiation_rounds:rounds,p_major_term_improvements:improvements,p_contextual_learning:learning?{creator_note:learning}:{}});
   if(error)throw new Error("Unable to complete this Deal.");revalidatePath(`/deals/${dealId}`);revalidatePath("/deals");revalidatePath("/insights");revalidatePath("/dashboard");
 }
+
+const operationalFactSchema=z.object({dealId:z.uuid(),fieldKey:z.enum(["brand_name","agency_name","contact_name","contact_email","billing_entity","billing_address","accounts_payable_email","purchase_order","invoice_instructions","campaign_start","campaign_end","usage_terms","exclusivity_terms","paid_media_terms"]),displayValue:z.string().trim().min(1).max(5000)});
+export async function saveOperationalFact(formData:FormData){
+  const value=operationalFactSchema.parse({dealId:formData.get("dealId"),fieldKey:formData.get("fieldKey"),displayValue:formData.get("displayValue")});
+  const {supabase}=await requireUser();const {error}=await supabase.rpc("set_deal_operational_fact",{p_deal_id:value.dealId,p_field_key:value.fieldKey,p_value:{text:value.displayValue},p_display_value:value.displayValue});
+  if(error)throw new Error("Unable to save this Deal fact.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");
+}
+
+export async function prepareInvoice(formData:FormData){
+  const dealId=idSchema.parse(formData.get("dealId"));const {supabase}=await requireUser();const {error}=await supabase.rpc("prepare_deal_invoice",{p_deal_id:dealId});
+  if(error)throw new Error("Add an invoice issuer profile and final agreed fee before preparing the invoice.");revalidatePath(`/deals/${dealId}`);revalidatePath("/dashboard");
+}
+
+export async function finaliseInvoice(formData:FormData){
+  const value=z.object({dealId:z.uuid(),invoiceId:z.uuid(),expectedTotal:z.coerce.number().int().nonnegative()}).parse({dealId:formData.get("dealId"),invoiceId:formData.get("invoiceId"),expectedTotal:formData.get("expectedTotal")});
+  const {supabase}=await requireUser();const {error}=await supabase.rpc("finalise_invoice",{p_invoice_id:value.invoiceId,p_expected_total_minor:value.expectedTotal});
+  if(error)throw new Error("The invoice changed or is not ready for final review.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");
+}
+
+export async function confirmInvoicePaid(formData:FormData){
+  const value=z.object({dealId:z.uuid(),invoiceId:z.uuid(),confirmation:z.literal("confirmed")}).parse({dealId:formData.get("dealId"),invoiceId:formData.get("invoiceId"),confirmation:formData.get("confirmation")});
+  const {supabase}=await requireUser();const {error}=await supabase.rpc("confirm_invoice_paid",{p_invoice_id:value.invoiceId});
+  if(error)throw new Error("Payment could not be confirmed.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");revalidatePath("/insights");
+}
+

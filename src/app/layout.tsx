@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Replio — Your commercial manager",
+  title: "Rep Bureau — Your commercial manager",
   description: "More money. Better deals. Less stress.",
 };
 
@@ -31,3 +31,4 @@ export default function RootLayout({
     </html>
   );
 }
+
