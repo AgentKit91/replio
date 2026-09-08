@@ -112,3 +112,22 @@ export async function confirmInvoicePaid(formData:FormData){
   if(error)throw new Error("Payment could not be confirmed.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");revalidatePath("/insights");
 }
 
+export async function prepareInvoiceEmail(formData:FormData){
+  const value=z.object({dealId:z.uuid(),invoiceId:z.uuid()}).parse({dealId:formData.get("dealId"),invoiceId:formData.get("invoiceId")});
+  const {supabase}=await requireUser();const {error}=await supabase.rpc("prepare_invoice_email",{p_invoice_id:value.invoiceId,p_provider_route:"managed_email"});
+  if(error)throw new Error("Review the accounts payable email and make sure the invoice PDF is ready.");revalidatePath(`/deals/${value.dealId}`);
+}
+
+export async function preparePaymentChaseEmail(formData:FormData){
+  const value=z.object({dealId:z.uuid(),reminderId:z.uuid()}).parse({dealId:formData.get("dealId"),reminderId:formData.get("reminderId")});
+  const {supabase}=await requireUser();const {error}=await supabase.rpc("prepare_payment_chase_email",{p_reminder_id:value.reminderId,p_provider_route:"managed_email"});
+  if(error)throw new Error("The payment reminder could not be prepared.");revalidatePath(`/deals/${value.dealId}`);
+}
+
+export async function approveManagedAdminEmail(formData:FormData){
+  const value=z.object({dealId:z.uuid(),draftId:z.uuid(),expectedVersion:z.coerce.number().int().positive(),confirmation:z.literal("send")}).parse({dealId:formData.get("dealId"),draftId:formData.get("draftId"),expectedVersion:formData.get("expectedVersion"),confirmation:formData.get("confirmation")});
+  const {supabase}=await requireUser();
+  const {error}=await supabase.rpc("approve_managed_email_send",{p_draft_id:value.draftId,p_expected_version:value.expectedVersion,p_confirmation:true});
+  if(error)throw new Error("The draft changed or the recipient is no longer safe. Review it again.");revalidatePath(`/deals/${value.dealId}`);revalidatePath("/dashboard");
+}
+
