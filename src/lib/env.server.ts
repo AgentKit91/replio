@@ -13,6 +13,11 @@ const serverSchema = z.object({
   GMAIL_TOKEN_ENCRYPTION_KEY: z.string().min(1).optional(),
   GMAIL_TOKEN_ENCRYPTION_KEY_VERSION: z.string().min(1).default("v1"),
   INTERNAL_JOB_SECRET: z.string().min(24).optional(),
+  RESEND_API_KEY: z.string().startsWith("re_").optional(),
+  RESEND_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
+  MANAGED_EMAIL_DOMAIN: z.string().regex(/^[a-z0-9.-]+\.[a-z]{2,}$/).optional(),
+  MANAGED_EMAIL_FROM_NAME: z.string().min(1).max(100).default("Rep Bureau"),
+  MANAGED_EMAIL_ENABLED: z.enum(["true","false"]).default("false"),
   STRIPE_SECRET_KEY: z.string().regex(/^(rk|sk)_(test|live)_/).optional(),
   STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),
   STRIPE_LIVE_BILLING_ENABLED: z.enum(["true", "false"]).default("false"),
@@ -40,6 +45,11 @@ export const serverEnv = serverSchema.parse({
   GMAIL_TOKEN_ENCRYPTION_KEY: process.env.GMAIL_TOKEN_ENCRYPTION_KEY || undefined,
   GMAIL_TOKEN_ENCRYPTION_KEY_VERSION: process.env.GMAIL_TOKEN_ENCRYPTION_KEY_VERSION,
   INTERNAL_JOB_SECRET: process.env.INTERNAL_JOB_SECRET || undefined,
+  RESEND_API_KEY: process.env.RESEND_API_KEY || undefined,
+  RESEND_WEBHOOK_SECRET: process.env.RESEND_WEBHOOK_SECRET || undefined,
+  MANAGED_EMAIL_DOMAIN: process.env.MANAGED_EMAIL_DOMAIN || undefined,
+  MANAGED_EMAIL_FROM_NAME: process.env.MANAGED_EMAIL_FROM_NAME,
+  MANAGED_EMAIL_ENABLED: process.env.MANAGED_EMAIL_ENABLED,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || undefined,
   STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || undefined,
   STRIPE_LIVE_BILLING_ENABLED: process.env.STRIPE_LIVE_BILLING_ENABLED,
@@ -85,5 +95,10 @@ export function legalPublicationConfig() {
     LEGAL_GOVERNING_LAW: true,
     LEGAL_EFFECTIVE_DATE: true,
   }).parse(serverEnv);
+}
+
+export function requireManagedEmailServerEnv(){
+  const env=serverSchema.required({RESEND_API_KEY:true,RESEND_WEBHOOK_SECRET:true,MANAGED_EMAIL_DOMAIN:true}).parse(serverEnv);
+  if(env.MANAGED_EMAIL_ENABLED!=="true")throw new Error("Managed email is not activated");return env;
 }
 

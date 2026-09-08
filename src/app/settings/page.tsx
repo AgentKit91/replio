@@ -3,7 +3,8 @@ import { AppShell } from "@/components/replio/AppShell";
 import { requireUser } from "@/features/auth/require-user";
 import {openBillingPortal,startCheckout} from "./billing-actions";
 import {grantSupportAccess,revokeSupportAccess} from "./support-actions";
-import {saveInvoiceIssuerProfile} from "./invoice-actions";
+import {allocateManagedEmailAddress,saveInvoiceIssuerProfile} from "./invoice-actions";
+import {serverEnv} from "@/lib/env.server";
 
 const notices: Record<string, string> = {
   connected: "Gmail is connected. Your Replio label is ready.",
@@ -14,13 +15,14 @@ const notices: Record<string, string> = {
 
 export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ gmail?: string;billing?:string }> }) {
   const { supabase, userId } = await requireUser();
-  const [{data:connection},{data:subscription},{data:plans},{data:usage},{data:supportGrants},{data:issuer}]=await Promise.all([
+  const [{data:connection},{data:subscription},{data:plans},{data:usage},{data:supportGrants},{data:issuer},{data:managedAddress}]=await Promise.all([
     supabase.from("integration_connections").select("state, connected_identity, last_successful_sync_at, error_message").eq("user_id", userId).eq("provider", "gmail").maybeSingle(),
     supabase.from("subscriptions").select("plan_key,status,trial_ends_at,current_period_ends_at,cancel_at_period_end").maybeSingle(),
     supabase.from("plan_catalog").select("plan_key,display_name,monthly_price_minor,currency,trial_days").order("monthly_price_minor"),
     supabase.from("usage_counters").select("value,period_end").eq("metric","analysed_deals").order("period_start",{ascending:false}).limit(1).maybeSingle(),
     supabase.from("support_access_grants").select("id,reason,expires_at,revoked_at,created_at").order("created_at",{ascending:false}).limit(10),
-    supabase.from("invoice_issuer_profiles").select("legal_name,trading_name,address,email,registration_number,tax_number,bank_details,invoice_prefix,payment_terms_days").maybeSingle()
+    supabase.from("invoice_issuer_profiles").select("legal_name,trading_name,address,email,registration_number,tax_number,bank_details,invoice_prefix,payment_terms_days").maybeSingle(),
+    supabase.from("creator_email_addresses").select("address,status").eq("is_primary",true).maybeSingle()
   ]);
   const { gmail,billing } = await searchParams;
   const connected = connection?.state === "active";
@@ -39,6 +41,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         <p className="privacy-note">Google will ask for permission to read, label, compose and send email. Replio processes only threads you label Replio.</p>
       </>}
     </section>
+    <section className="content-block settings-card" aria-labelledby="managed-email-heading"><div><p className="eyebrow">Commercial inbox</p><h2 id="managed-email-heading">Your Rep Bureau address</h2></div>{managedAddress?<><p className="connection-status"><span aria-hidden="true">●</span> {managedAddress.address}</p><p className="muted">Give this address to brands or forward a commercial email to it from any provider. Direct and forwarded conversations join the same Deal pipeline as Gmail.</p></>:<><p className="muted">Use the full Deal lifecycle without connecting Gmail. Rep Bureau allocates the address; Resend transports the messages securely.</p><form action={allocateManagedEmailAddress}><button className="button button-primary" disabled={!serverEnv.MANAGED_EMAIL_DOMAIN}>Create my Rep Bureau address</button></form>{!serverEnv.MANAGED_EMAIL_DOMAIN?<p className="privacy-note">Address activation is waiting for the dedicated subdomain. Your normal repbureau.co.uk mail remains on Zoho.</p>:null}</>}</section>
     <section className="content-block settings-card" aria-labelledby="invoice-profile-heading">
       <div><p className="eyebrow">Deal admin</p><h2 id="invoice-profile-heading">Invoice issuer profile</h2></div>
       <p className="muted">Saved once and reused when Rep Bureau prepares invoices. Review every invoice before it is numbered or sent.</p>
