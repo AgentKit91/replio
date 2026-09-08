@@ -95,8 +95,8 @@ create or replace function public.ingest_managed_email(
 declare v_event private.managed_email_events; v_address public.creator_email_addresses; v_thread public.deal_threads; v_deal uuid; v_message uuid; v_recipient text; v_matches integer;
 begin
   if coalesce(auth.jwt()->>'role','')<>'service_role' then raise exception 'service role required' using errcode='42501'; end if;
-  insert into private.managed_email_events(provider_event_id,provider_email_id,safe_metadata) values(p_provider_event_id,p_provider_email_id,jsonb_build_object('recipientCount',coalesce(array_length(p_to,1),0),'hasAttachments',false)) on conflict(provider_event_id) do nothing;
-  select * into v_event from private.managed_email_events where provider_event_id=p_provider_event_id for update;
+  insert into private.managed_email_events(provider_event_id,provider_email_id,safe_metadata) values(p_provider_event_id,p_provider_email_id,jsonb_build_object('recipientCount',coalesce(array_length(p_to,1),0),'hasAttachments',false)) on conflict do nothing;
+  select * into v_event from private.managed_email_events where provider_event_id=p_provider_event_id or provider_email_id=p_provider_email_id order by created_at limit 1 for update;
   if v_event.status='completed' then return v_event.message_id; end if;
   select count(*),min(lower(t)) into v_matches,v_recipient from unnest(p_to) t join public.creator_email_addresses a on lower(a.address)=lower(t) and a.status='active';
   if v_matches<>1 then update private.managed_email_events set status='rejected',rejection_reason='ambiguous_or_unknown_destination',completed_at=now() where id=v_event.id; return null; end if;
