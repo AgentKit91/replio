@@ -125,9 +125,10 @@ begin
     and exists(select 1 from public.workspace_members wm where wm.workspace_id=d.workspace_id and wm.user_id=auth.uid());
   if v_workspace is null then raise exception 'deal not found' using errcode='P0002'; end if;
   select * into v_old from public.deal_operational_facts where deal_id=p_deal_id and field_key=p_field_key and is_current for update;
+  if v_old.id is not null then update public.deal_operational_facts set is_current=false where id=v_old.id; end if;
   insert into public.deal_operational_facts(workspace_id,deal_id,field_key,value,display_value,source_kind,precedence,created_by)
   values(v_workspace,p_deal_id,p_field_key,p_value,trim(p_display_value),'creator',100,auth.uid()) returning id into v_new;
-  if v_old.id is not null then update public.deal_operational_facts set is_current=false,superseded_by=v_new where id=v_old.id; end if;
+  if v_old.id is not null then update public.deal_operational_facts set superseded_by=v_new where id=v_old.id; end if;
   insert into public.activity_events(workspace_id,entity_type,entity_id,event_type,actor_user_id,metadata)
   values(v_workspace,'deal',p_deal_id,'deal_fact_updated',auth.uid(),jsonb_build_object('fieldKey',p_field_key));
   return v_new;
