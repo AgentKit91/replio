@@ -20,8 +20,8 @@ select isnt(public.approve_managed_email_send((select id from public.provider_em
 select is((select state from public.provider_email_drafts where invoice_id=:'invoice_id'),'approved','confirmed draft records creator approval');
 select is((select status from public.invoices where id=:'invoice_id'),'ready','queueing does not claim the invoice was sent');
 
-update public.invoices set status='sent',sent_at=now() where id=:'invoice_id';
 reset role;
+update public.invoices set status='sent',sent_at=now() where id=:'invoice_id';
 insert into public.payment_reminders(workspace_id,invoice_id,reminder_kind,subject,body,due_snapshot,idempotency_key) values(:'workspace_id',:'invoice_id','overdue','Payment reminder','Please confirm payment.',current_date-1,'test-reminder') returning id as reminder_id \gset
 set local role authenticated;set local request.jwt.claims='{"sub":"00000000-0000-4000-8000-000000000181","role":"authenticated"}';
 select isnt(public.prepare_payment_chase_email(:'reminder_id','managed_email'),null,'payment chase is prepared');
