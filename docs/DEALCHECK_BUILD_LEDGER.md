@@ -56,9 +56,9 @@ Implementation note: no product-scope difference. Atomic mutations use narrowly 
 - [x] Extend existing signed Stripe webhook for `dealcheck_credit_pack` without changing subscription projection.
 - [x] Add idempotent Stripe session → credit grant boundary.
 - [x] Add zero-credit purchase prompt / pricing actions.
-- [ ] Verify 3-pack test purchase grants exactly 3.
-- [ ] Verify 10-pack test purchase grants exactly 10.
-- [ ] Replay webhook and prove no duplicate credits.
+- [x] Verify 3-pack test purchase grants exactly 3.
+- [x] Verify 10-pack test purchase grants exactly 10.
+- [x] Replay webhook and prove no duplicate credits.
 - [x] Verify another completed check consumes exactly one purchased credit.
 
 **D4 exit gate / FEATURE FREEZE:** the full money loop works in Stripe test mode. From here, add no product features.
@@ -83,7 +83,7 @@ Implementation note: no product-scope difference. Atomic mutations use narrowly 
 
 Verification note (9 Sep 2026): hosted Supabase transactions proved one lifetime free grant, exact 3/10 pack grants, replay-safe pack/refund boundaries, one-credit consumption and duplicate-request reuse; cross-user reads and browser mutations were denied. The preview was checked at 390×844 and 1440×1000 with zero horizontal overflow and no browser console errors. `pnpm check` passed with 139 tests. The founder Google account completed the protected Preview OAuth return after the exact branch-alias callback was allowlisted. Three real analysis attempts reached the server and atomically restored the free credit; safe runtime diagnostics confirmed Vercel AI Gateway rejected them only because the team has no valid card on file.
 
-Stripe Preview activation note (9 Sep 2026): the existing Stripe test API key is scoped separately to Production and only the `dealcheck-v1` Preview branch, preserving the existing Rep Bureau production integration without granting unrelated previews access. Vercel Standard Protection is enabled and a dedicated automation bypass was created for the DealCheck Stripe Preview webhook. The first destination was accidentally created in a separate Stripe sandbox rather than the existing Rep Bureau account used by Checkout; the mismatch was caught by a real £4.99 test purchase before any credit was granted. Corrected test-mode destination `we_1UDr5MLU3Hc8FOCfvBysP8uk` now lives on the Checkout account, listens only to `checkout.session.completed`, targets the protected branch alias and has its distinct signing secret stored only as the branch-scoped Preview `STRIPE_WEBHOOK_SECRET`. A clean Preview deployment is required before replaying that completed session; the three Stripe journey boxes above remain open until the real test-mode checks pass.
+Stripe Preview activation note (9 Sep 2026): the existing Stripe test API key is scoped separately to Production and only the `dealcheck-v1` Preview branch, preserving the existing Rep Bureau production integration without granting unrelated previews access. Vercel Standard Protection is enabled and a dedicated automation bypass was created for the DealCheck Stripe Preview webhook. The first destination was accidentally created in a separate Stripe sandbox rather than the existing Rep Bureau account used by Checkout; the mismatch was caught by a real £4.99 test purchase before any credit was granted. Corrected test-mode destination `we_1UDr5MLU3Hc8FOCfvBysP8uk` now lives on the Checkout account, listens only to `checkout.session.completed`, targets the protected branch alias and has its distinct signing secret stored only as the branch-scoped Preview `STRIPE_WEBHOOK_SECRET`. After a clean Preview deployment, a real £4.99 test Checkout granted exactly 3 credits, replaying its completed event left the balance unchanged with one grant row, and a real £9.99 test Checkout granted exactly 10 credits. The resulting hosted balance is 14 (the lifetime free credit plus 13 purchased credits), so the D4 money-loop exit gate passes.
 
 ## Founder-only activation checklist
 
