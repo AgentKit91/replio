@@ -81,13 +81,14 @@ Implementation note: no product-scope difference. Atomic mutations use narrowly 
 - [x] Update this ledger and `docs/BUILD_STATUS.md` with final state.
 - [x] Push final branch and prepare reviewable PR/handoff.
 
-Verification note (9 Sep 2026): hosted Supabase transactions proved one lifetime free grant, exact 3/10 pack grants, replay-safe pack/refund boundaries, one-credit consumption and duplicate-request reuse; cross-user reads and browser mutations were denied. The final preview is READY and was checked at 390×844 and 1440×1000 with zero horizontal overflow and no browser/Vercel runtime errors. `pnpm check` passed with 139 tests. The three Stripe Checkout journey boxes above remain deliberately open until the account owner signs into the protected preview and confirms the test-mode payment step; automated implementation evidence is not being mislabeled as a completed purchase.
+Verification note (9 Sep 2026): hosted Supabase transactions proved one lifetime free grant, exact 3/10 pack grants, replay-safe pack/refund boundaries, one-credit consumption and duplicate-request reuse; cross-user reads and browser mutations were denied. The preview was checked at 390×844 and 1440×1000 with zero horizontal overflow and no browser console errors. `pnpm check` passed with 139 tests. The founder Google account completed the protected Preview OAuth return after the exact branch-alias callback was allowlisted. Three real analysis attempts reached the server and atomically restored the free credit; safe runtime diagnostics confirmed Vercel AI Gateway rejected them only because the team has no valid card on file. The three Stripe Checkout journey boxes above remain deliberately open until the branch-scoped test secret is enabled and the account owner confirms the test-mode payment steps; automated implementation evidence is not being mislabeled as a completed purchase.
 
 ## Founder-only activation checklist
 
 These are not reasons to leave implementation unfinished. Complete everything possible in code/test mode first.
 
 - [ ] Confirm final public URL/domain route for DealCheck.
+- [ ] Add a valid card to the existing Vercel AI Gateway team account to unlock Gateway credits; no new AI integration or project is required.
 - [ ] Confirm approved legal entity/contact/governing-law values and publish existing legal pages if required for public sale.
 - [ ] Confirm Stripe live-mode key/webhook configuration and intentionally enable live payment collection.
 - [ ] Perform one small real live purchase after founder activation, then confirm credits are granted once.
@@ -98,3 +99,4 @@ These are not reasons to leave implementation unfinished. Complete everything po
 - [x] No known P0/P1 defect remains.
 - [x] No out-of-scope feature was added.
 - [x] No manual founder step is being used to hide unfinished engineering.
+
