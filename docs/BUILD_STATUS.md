@@ -209,6 +209,14 @@ M9 — Hardening + closed beta gate
 
 ## Known blockers
 
+### DealCheck V1 release candidate — 9 Sep 2026
+
+- DealCheck is implemented on `dealcheck-v1`: public `/dealcheck`, safe Google sign-in/resume, one lifetime free credit, private history/results, deterministic valuation, guarded AI extraction/writing, and one-time 3/10-credit Stripe packs.
+- Migration `20260908200000_dealcheck_v1.sql` is applied to the existing Replio Supabase project. Hosted transactional checks passed for free/paid credit accounting, duplicate/refund/webhook idempotency and cross-user/RLS denial.
+- `pnpm check` passes: lint, typecheck, 139 tests across 23 files, and the Next.js production build.
+- Vercel Preview `dpl_2GNJN2WSVaXu3MGPF1Pm5TKsBdSu` is READY. `/dealcheck` passed 390×844 and 1440×1000 layout checks with no horizontal overflow, browser console warnings/errors or Vercel runtime errors.
+- Owner-gated verification still required before the Definition of Done can be signed off: sign into the protected preview with the permitted Google test account, run first-user and returning-user journeys, and confirm the 3-credit and 10-credit Stripe test Checkouts plus a replay. The preview OAuth callback is verified to target the active `dealcheck-v1` alias.
+
 1. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
 2. Privacy Policy/Terms routes and Google verification evidence are implemented behind fail-closed publication gates; public launch still requires founder/legal approval, an owned verified domain, OAuth submission and restricted-scope assessment.
 3. Docker is unavailable on this host; database/pgTAP verification runs in GitHub Actions.
