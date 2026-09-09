@@ -1,12 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isDealCheckReturnPath, safeRelativeReturnPath } from "@/features/dealcheck/return-path";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
+  const next = safeRelativeReturnPath(request.nextUrl.searchParams.get("next"));
   if (code) {
     const supabase = await createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      if (next && isDealCheckReturnPath(next)) return NextResponse.redirect(new URL(next, request.url));
       const { data: auth } = await supabase.auth.getUser();
       const { data: profile } = auth.user
         ? await supabase.from("user_profiles").select("onboarding_completed_at").eq("user_id", auth.user.id).single()
