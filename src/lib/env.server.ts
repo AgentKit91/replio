@@ -78,7 +78,7 @@ export function requireGmailServerEnv() {
 }
 
 export function requireStripeServerEnv(){
-  const env = serverSchema.required({STRIPE_SECRET_KEY:true,STRIPE_WEBHOOK_SECRET:true}).parse(serverEnv);
+  const env = serverSchema.required({STRIPE_SECRET_KEY:true}).parse(serverEnv);
   const isLiveKey = /^(rk|sk)_live_/.test(env.STRIPE_SECRET_KEY);
   if (isLiveKey !== (env.STRIPE_LIVE_BILLING_ENABLED === "true")) {
     throw new Error("Stripe key mode does not match STRIPE_LIVE_BILLING_ENABLED");
@@ -101,4 +101,5 @@ export function requireManagedEmailServerEnv(){
   const env=serverSchema.required({RESEND_API_KEY:true,RESEND_WEBHOOK_SECRET:true,MANAGED_EMAIL_DOMAIN:true}).parse(serverEnv);
   if(env.MANAGED_EMAIL_ENABLED!=="true")throw new Error("Managed email is not activated");return env;
 }
+
 
