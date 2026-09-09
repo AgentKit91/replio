@@ -1,0 +1,2 @@
+import {DEALCHECK_PACKS} from "@/features/dealcheck/catalog";import {startDealCheckCheckout} from "./actions";
+export function CreditPacks(){return <div className="dealcheck-packs">{Object.entries(DEALCHECK_PACKS).map(([key,pack])=><article key={key}><p>{pack.label}</p><strong>£{(pack.amountMinor/100).toFixed(2)}</strong><form action={startDealCheckCheckout}><input type="hidden" name="packKey" value={key}/><button className="dealcheck-button dealcheck-button-small">Buy credits</button></form></article>)}</div>}
