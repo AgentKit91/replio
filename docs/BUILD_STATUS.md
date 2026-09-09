@@ -214,8 +214,9 @@ M9 — Hardening + closed beta gate
 - DealCheck is implemented on `dealcheck-v1`: public `/dealcheck`, safe Google sign-in/resume, one lifetime free credit, private history/results, deterministic valuation, guarded AI extraction/writing, and one-time 3/10-credit Stripe packs.
 - Migration `20260908200000_dealcheck_v1.sql` is applied to the existing Replio Supabase project. Hosted transactional checks passed for free/paid credit accounting, duplicate/refund/webhook idempotency and cross-user/RLS denial.
 - `pnpm check` passes: lint, typecheck, 139 tests across 23 files, and the Next.js production build.
-- Vercel Preview `dpl_2GNJN2WSVaXu3MGPF1Pm5TKsBdSu` is READY. `/dealcheck` passed 390×844 and 1440×1000 layout checks with no horizontal overflow, browser console warnings/errors or Vercel runtime errors.
-- Owner-gated verification still required before the Definition of Done can be signed off: sign into the protected preview with the permitted Google test account, run first-user and returning-user journeys, and confirm the 3-credit and 10-credit Stripe test Checkouts plus a replay. The preview OAuth callback is verified to target the active `dealcheck-v1` alias.
+- Vercel Preview `dpl_CGYyrL8hqJFN1HVdqftBfmAmJjzA` is READY. `/dealcheck` passed 390×844 and 1440×1000 layout checks with no horizontal overflow or browser console warnings/errors. The preview OAuth callback now includes the exact active `dealcheck-v1` alias and resume query; the founder Google account completed the protected sign-in return successfully.
+- Three real first-check attempts reached the Preview server and each restored the free credit exactly once. Safe runtime diagnostics identified the external blocker: Vercel AI Gateway returns `GatewayInternalServerError` because the team has no valid card on file. Add the card to the existing team Gateway account; the official model ID (`openai/gpt-5.6-luna`), OIDC authentication path and structured-output API are current.
+- Owner-gated verification still required before the Definition of Done can be signed off: activate the existing Gateway billing, complete first-user and returning-user result journeys, and confirm the 3-credit and 10-credit Stripe test Checkouts plus a replay. Stripe server secrets remain Production-only until explicitly scoped to the DealCheck Preview branch.
 
 1. Google Auth remains in Testing status and currently permits the founder test account; public launch will require completing OAuth branding/policy URLs and publishing review as applicable.
 2. Privacy Policy/Terms routes and Google verification evidence are implemented behind fail-closed publication gates; public launch still requires founder/legal approval, an owned verified domain, OAuth submission and restricted-scope assessment.
@@ -235,4 +236,5 @@ These are external activation/verification blockers, not reasons to redesign or 
 - **27 Aug 2026 — Next.js `proxy.ts`.** Uses current Next.js 16/Supabase SSR mechanics rather than deprecated middleware naming.
 - **27 Aug 2026 — explicit Data API grants.** Current Supabase projects may not auto-expose new public tables; M1 grants are deliberately least-privilege and paired with RLS.
 - **27 Aug 2026 — restrained configurable visual system.** Neutral green development accent is tokenized pending founder brand assets; no product behaviour depends on it.
+
 
